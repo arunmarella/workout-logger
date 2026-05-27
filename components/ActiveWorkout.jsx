@@ -1,49 +1,70 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { genId } from "@/lib/data";
 import RestTimer from "./RestTimer";
+import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
+import { useWorkoutState } from "@/hooks/useWorkoutState";
+
+const hapticImpact = async (style = ImpactStyle.Light) => {
+    try {
+        await Haptics.impact({ style });
+    } catch (e) {}
+};
+
+const hapticNotification = async (type = NotificationType.Success) => {
+    try {
+        await Haptics.notification({ type });
+    } catch (e) {}
+};
 
 export default function ActiveWorkout({ template, onFinish, onCancel }) {
-    const [logs, setLogs] = useState(() =>
-        template.exercises.map((ex) => ({
-            ...ex,
-            sets: ex.sets.map((s) => ({
-                ...s,
-                done: false,
-                actualReps: s.reps,
-                actualWeight: s.weight,
-            })),
-        }))
-    );
-    const [restingSet, setRestingSet] = useState(null);
-    const [startTime] = useState(Date.now());
+    const {
+        workout: syncedWorkout,
+        sessionId,
+        updateWorkout,
+        finishWorkout: completeSyncedWorkout
+    } = useWorkoutState({ initialTemplate: template });
 
-    const update = (ei, si, f, v) =>
-        setLogs((prev) =>
-            prev.map((ex, i) =>
-                i !== ei ? ex : { ...ex, sets: ex.sets.map((s, j) => (j !== si ? s : { ...s, [f]: v })) }
-            )
+    useEffect(() => {
+        // Automatically start a synced session if none exists
+        if (template && !sessionId) {
+            startWorkout(template);
+        }
+    }, [template, sessionId, startWorkout]);
+
+    const [restingSet, setRestingSet] = useState(null);
+
+    // Initial fallback logs - in a real app, you might want to show a spinner
+    // until syncedWorkout is ready.
+    const logs = syncedWorkout ? syncedWorkout.exercises : [];
+    const startTime = syncedWorkout ? syncedWorkout.startTime : Date.now();
+
+    const update = (ei, si, f, v) => {
+        if (!syncedWorkout) return;
+        const updatedExercises = syncedWorkout.exercises.map((ex, i) =>
+            i !== ei ? ex : { ...ex, sets: ex.sets.map((s, j) => (j !== si ? s : { ...s, [f]: v })) }
         );
+        updateWorkout({ ...syncedWorkout, exercises: updatedExercises });
+    };
 
     const toggleDone = (ei, si) => {
         const was = logs[ei].sets[si].done;
         update(ei, si, "done", !was);
-        if (!was) setRestingSet({ ei, si });
+        if (!was) {
+            hapticImpact(ImpactStyle.Medium);
+            setRestingSet({ ei, si });
+        }
     };
 
     const total = logs.reduce((a, ex) => a + ex.sets.length, 0);
     const done = logs.reduce((a, ex) => a + ex.sets.filter((s) => s.done).length, 0);
     const pct = Math.round((done / total) * 100);
 
-    const handleFinish = () =>
-        onFinish({
-            id: genId(),
-            template_name: template.name,
-            date: new Date().toISOString(),
-            duration: Math.round((Date.now() - startTime) / 60000),
-            exercises: logs,
-        });
+    const handleFinish = async () => {
+        hapticNotification(NotificationType.Success);
+        await completeSyncedWorkout(onFinish);
+    };
 
     return (
         <div style={{ maxWidth: 600, margin: "0 auto" }}>
@@ -75,6 +96,22 @@ export default function ActiveWorkout({ template, onFinish, onCancel }) {
                     <div style={{ fontSize: 11, color: "var(--text-faint)" }}>{pct}% complete</div>
                 </div>
             </div>
+            {sessionId && (
+                <div style={{ 
+                    background: "var(--bg-tab)", 
+                    padding: "8px 12px", 
+                    borderRadius: 10, 
+                    marginBottom: 16, 
+                    fontSize: 12, 
+                    color: "var(--text-muted)",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center"
+                }}>
+                    <span>Syncing with Watch...</span>
+                    <span style={{ fontFamily: "monospace", opacity: 0.7 }}>ID: {sessionId.slice(0, 8)}</span>
+                </div>
+            )}
             <div style={{ background: "var(--border-default)", borderRadius: 99, height: 6, marginBottom: 16 }}>
                 <div
                     style={{

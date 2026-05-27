@@ -15,8 +15,12 @@ import { useTheme } from "@/components/ThemeProvider";
 import ActiveWorkout from "@/components/ActiveWorkout";
 import TemplateEditor from "@/components/TemplateEditor";
 import History from "@/components/History";
+import Auth from "@/components/Auth";
+import { useAuth } from "@/components/AuthProvider";
+import { supabase } from "@/lib/supabase";
 
 export default function Home() {
+  const { user, loading: authLoading } = useAuth();
   const [data, setData] = useState({ templates: [], history: [] });
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState("templates");
@@ -25,35 +29,55 @@ export default function Home() {
   const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
+    console.warn("DEBUG: App useEffect mounted.");
+    
+    // SAFE BOOT: Force loading to end after 5 seconds no matter what
+    const safeBoot = setTimeout(() => {
+      setLoading((prev) => {
+        if (prev) {
+          console.warn("DEBUG: Safe Boot triggered! Forcing loading to end.");
+          return false;
+        }
+        return prev;
+      });
+    }, 5000);
+
     async function init() {
       try {
+        console.warn("DEBUG: Starting initialization...");
         const remoteData = await fetchAllData();
+        console.warn("DEBUG: fetchAllData returned.");
         
-        // Simple migration logic: if remote is empty and local has data, migrate
+        // Simple migration logic
         const localData = loadLocalData();
         if (remoteData.templates.length === 0 && localData.templates.length > 0) {
-          console.log("Migrating local data to Supabase...");
-          for (const t of localData.templates) {
-            await upsertTemplate(t);
-          }
-          for (const h of localData.history) {
-            await saveHistory(h);
-          }
+          console.warn("DEBUG: Migration required.");
+          // ... migrations ...
+          for (const t of localData.templates) await upsertTemplate(t);
+          for (const h of localData.history) await saveHistory(h);
           const finalData = await fetchAllData();
           setData(finalData);
-          console.log("Migration successful. Clearing local storage.");
+          console.warn("DEBUG: Migration complete.");
           clearLocalData();
         } else {
+          console.warn("DEBUG: No migration needed.");
           setData(remoteData);
         }
       } catch (err) {
-        console.error("Failed to load data:", err);
+        console.warn("DEBUG: Initialization error:", err.message);
       } finally {
+        console.warn("DEBUG: Initialization finished.");
         setLoading(false);
+        clearTimeout(safeBoot);
       }
     }
-    init();
-  }, []);
+    
+    if (user) {
+      init();
+    } else {
+      setLoading(false);
+    }
+  }, [user]);
 
   const saveTemplate = async (tpl) => {
     try {
@@ -114,7 +138,7 @@ export default function Home() {
     }
   };
 
-  if (loading) {
+  if (authLoading || (loading && user)) {
     return (
       <div style={{ 
         minHeight: "100vh", 
@@ -126,10 +150,14 @@ export default function Home() {
       }}>
         <div style={{ textAlign: "center" }}>
           <div style={{ fontSize: 40, marginBottom: 20 }}>⚡️</div>
-          <div style={{ fontWeight: 600 }}>Loading your data...</div>
+          <div style={{ fontWeight: 600 }}>Loading...</div>
         </div>
       </div>
     );
+  }
+
+  if (!user) {
+    return <Auth />;
   }
 
   if (activeWorkout) {
@@ -162,7 +190,7 @@ export default function Home() {
         style={{
           background: "var(--bg-header)",
           borderBottom: "1px solid var(--border-default)",
-          padding: "16px 20px",
+          padding: "calc(16px + env(safe-area-inset-top)) 20px 16px",
           position: "sticky",
           top: 0,
           zIndex: 10,
@@ -177,8 +205,27 @@ export default function Home() {
             alignItems: "center",
           }}
         >
-          <div style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)" }}>💪 Workout Logger</div>
+          <div style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)" }}>💪 Rep Journal</div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <a
+              href="/watch"
+              target="_blank"
+              title="Open Watch View"
+              style={{
+                fontSize: 18,
+                textDecoration: "none",
+                background: "var(--bg-tab)",
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                border: "1px solid var(--border-default)",
+              }}
+            >
+              ⌚️
+            </a>
             <div
               style={{ display: "flex", gap: 4, background: "var(--bg-tab)", borderRadius: 10, padding: 3 }}
             >
@@ -209,6 +256,18 @@ export default function Home() {
               title={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
             >
               {theme === "light" ? "🌙" : "☀️"}
+            </button>
+            <button
+              onClick={() => supabase.auth.signOut()}
+              style={{
+                background: "none",
+                border: "none",
+                fontSize: 18,
+                cursor: "pointer"
+              }}
+              title="Sign Out"
+            >
+              🚪
             </button>
           </div>
         </div>
@@ -296,35 +355,39 @@ export default function Home() {
                     >
                       ▶ Start
                     </button>
-                    <button
-                      onClick={() => setEditing(t)}
-                      style={{
-                        flex: 1,
-                        padding: 9,
-                        borderRadius: 9,
-                        border: "1px solid var(--border-default)",
-                        background: "var(--bg-card)",
-                        color: "var(--text-muted)",
-                        cursor: "pointer",
-                        fontSize: 13,
-                      }}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => deleteTemplate(t.id)}
-                      style={{
-                        padding: "9px 12px",
-                        borderRadius: 9,
-                        border: "1px solid var(--border-danger)",
-                        background: "var(--bg-card)",
-                        color: "var(--text-danger)",
-                        cursor: "pointer",
-                        fontSize: 13,
-                      }}
-                    >
-                      ✕
-                    </button>
+                    {!t.is_system && (
+                      <>
+                        <button
+                          onClick={() => setEditing(t)}
+                          style={{
+                            flex: 1,
+                            padding: 9,
+                            borderRadius: 9,
+                            border: "1px solid var(--border-default)",
+                            background: "var(--bg-card)",
+                            color: "var(--text-muted)",
+                            cursor: "pointer",
+                            fontSize: 13,
+                          }}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => deleteTemplate(t.id)}
+                          style={{
+                            padding: "9px 12px",
+                            borderRadius: 9,
+                            border: "1px solid var(--border-danger)",
+                            background: "var(--bg-card)",
+                            color: "var(--text-danger)",
+                            cursor: "pointer",
+                            fontSize: 13,
+                          }}
+                        >
+                          ✕
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               ))

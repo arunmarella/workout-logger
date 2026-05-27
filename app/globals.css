@@ -83,6 +83,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background 0.3s ease, color 0.3s ease;
+  /* Safe area padding for mobile devices */
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* Smooth theme transitions for cards and inputs */
@@ -112,4 +114,45 @@ input, button, div {
 
 .theme-toggle:active {
   transform: scale(0.95);
+}
+
+/* ─── Apple Watch Specific Styles ─── */
+:root {
+  --watch-bg: #000000;
+  --watch-card: #1c1c1e;
+  --watch-border: #3a3a3c;
+  --watch-accent: #0a84ff;
+  --watch-success: #30d158;
+  --watch-danger: #ff453a;
+  --watch-text: #ffffff;
+  --watch-text-secondary: #8e8e93;
+}
+
+[data-watch="true"] {
+  background: var(--watch-bg);
+  color: var(--watch-text);
+}
+
+[data-watch="true"] body {
+  background: var(--watch-bg);
+}
+
+.watch-btn-primary {
+  background: var(--watch-accent);
+  color: #fff;
+  border: none;
+  border-radius: 99px;
+  font-weight: 600;
+  padding: 12px;
+  width: 100%;
+  cursor: pointer;
+}
+
+.watch-btn-secondary {
+  background: var(--watch-card);
+  color: var(--watch-text);
+  border: 1px solid var(--watch-border);
+  border-radius: 99px;
+  padding: 10px;
+  width: 100%;
 }

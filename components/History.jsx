@@ -1,6 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
+
+const hapticImpact = async (style = ImpactStyle.Light) => {
+    try {
+        await Haptics.impact({ style });
+    } catch (e) {}
+};
+
+const hapticNotification = async (type = NotificationType.Success) => {
+    try {
+        await Haptics.notification({ type });
+    } catch (e) {}
+};
 
 export default function History({ history, onClear, onDelete }) {
     const [expanded, setExpanded] = useState(null);
@@ -26,7 +39,10 @@ export default function History({ history, onClear, onDelete }) {
             >
                 <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)" }}>Workout History</div>
                 <button
-                    onClick={onClear}
+                    onClick={() => {
+                        hapticImpact(ImpactStyle.Heavy);
+                        onClear();
+                    }}
                     style={{
                         fontSize: 12,
                         padding: "4px 10px",
@@ -97,6 +113,7 @@ export default function History({ history, onClear, onDelete }) {
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
+                                    hapticImpact(ImpactStyle.Light);
                                     onDelete?.(w.id);
                                 }}
                                 style={{
