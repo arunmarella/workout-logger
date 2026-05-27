@@ -11,6 +11,7 @@ export default function ExerciseAutocomplete({ value, onChange, placeholder }) {
     const containerRef = useRef(null);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setQuery(value || "");
     }, [value]);
 
@@ -102,7 +103,7 @@ export default function ExerciseAutocomplete({ value, onChange, placeholder }) {
                                 borderBottom: "1px solid var(--border-default)",
                             }}
                         >
-                            + Add "{query}" as custom exercise
+                            {`+ Add "${query}" as custom exercise`}
                         </div>
                     )}
                     {results.map((ex) => (

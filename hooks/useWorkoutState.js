@@ -21,6 +21,7 @@ export function useWorkoutState({ sessionId: initialSessionId = null, initialTem
   // Initialize workout from template if provided
   useEffect(() => {
     if (initialTemplate && !workout) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setWorkout({
         ...initialTemplate,
         startTime: Date.now(),
@@ -59,8 +60,6 @@ export function useWorkoutState({ sessionId: initialSessionId = null, initialTem
       .subscribe((status) => {
         setIsConnected(status === 'SUBSCRIBED');
       });
-
-    channelRef.current = channel;
 
     // Initial fetch
     const fetchInitial = async () => {

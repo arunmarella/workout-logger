@@ -79,6 +79,28 @@ export default function Home() {
     }
   }, [user]);
 
+  const userTemplates = data.templates.filter((t) => !t.is_system);
+  const systemTemplates = data.templates.filter((t) => t.is_system);
+
+  const handleCloneTemplate = async (template) => {
+    try {
+      const clonedTemplate = {
+        id: crypto.randomUUID(),
+        name: `${template.name} (Copy)`,
+        exercises: template.exercises.map((ex) => ({
+          ...ex,
+          id: Math.random().toString(36).slice(2, 9),
+        })),
+      };
+      await upsertTemplate(clonedTemplate);
+      const updatedData = await fetchAllData();
+      setData(updatedData);
+      setTab("templates");
+    } catch (err) {
+      alert("Failed to copy template: " + err.message);
+    }
+  };
+
   const saveTemplate = async (tpl) => {
     try {
       await upsertTemplate(tpl);
@@ -229,7 +251,7 @@ export default function Home() {
             <div
               style={{ display: "flex", gap: 4, background: "var(--bg-tab)", borderRadius: 10, padding: 3 }}
             >
-              {["templates", "history"].map((t) => (
+              {["templates", "library", "history"].map((t) => (
                 <button
                   key={t}
                   onClick={() => setTab(t)}
@@ -245,7 +267,7 @@ export default function Home() {
                     boxShadow: tab === t ? "var(--shadow-tab)" : "none",
                   }}
                 >
-                  {t.charAt(0).toUpperCase() + t.slice(1)}
+                  {t === "templates" ? "My Templates" : t === "library" ? "Library" : "History"}
                 </button>
               ))}
             </div>
@@ -300,13 +322,13 @@ export default function Home() {
                 + New
               </button>
             </div>
-            {data.templates.length === 0 ? (
+            {userTemplates.length === 0 ? (
               <div style={{ textAlign: "center", padding: "60px 0", color: "var(--text-faint)" }}>
                 <div style={{ fontSize: 36, marginBottom: 8 }}>🏋️</div>
                 <div>No templates yet — create one to get started</div>
               </div>
             ) : (
-              data.templates.map((t) => (
+              userTemplates.map((t) => (
                 <div
                   key={t.id}
                   style={{
@@ -355,39 +377,124 @@ export default function Home() {
                     >
                       ▶ Start
                     </button>
-                    {!t.is_system && (
-                      <>
-                        <button
-                          onClick={() => setEditing(t)}
-                          style={{
-                            flex: 1,
-                            padding: 9,
-                            borderRadius: 9,
-                            border: "1px solid var(--border-default)",
-                            background: "var(--bg-card)",
-                            color: "var(--text-muted)",
-                            cursor: "pointer",
-                            fontSize: 13,
-                          }}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => deleteTemplate(t.id)}
-                          style={{
-                            padding: "9px 12px",
-                            borderRadius: 9,
-                            border: "1px solid var(--border-danger)",
-                            background: "var(--bg-card)",
-                            color: "var(--text-danger)",
-                            cursor: "pointer",
-                            fontSize: 13,
-                          }}
-                        >
-                          ✕
-                        </button>
-                      </>
-                    )}
+                    <button
+                      onClick={() => setEditing(t)}
+                      style={{
+                        flex: 1,
+                        padding: 9,
+                        borderRadius: 9,
+                        border: "1px solid var(--border-default)",
+                        background: "var(--bg-card)",
+                        color: "var(--text-muted)",
+                        cursor: "pointer",
+                        fontSize: 13,
+                      }}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => deleteTemplate(t.id)}
+                      style={{
+                        padding: "9px 12px",
+                        borderRadius: 9,
+                        border: "1px solid var(--border-danger)",
+                        background: "var(--bg-card)",
+                        color: "var(--text-danger)",
+                        cursor: "pointer",
+                        fontSize: 13,
+                      }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </>
+        )}
+        {tab === "library" && (
+          <>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 16,
+              }}
+            >
+              <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)" }}>Template Library</div>
+            </div>
+            {systemTemplates.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "60px 0", color: "var(--text-faint)" }}>
+                <div style={{ fontSize: 36, marginBottom: 8 }}>📚</div>
+                <div>No system templates available</div>
+              </div>
+            ) : (
+              systemTemplates.map((t) => (
+                <div
+                  key={t.id}
+                  style={{
+                    background: "var(--bg-card)",
+                    border: "1px solid var(--border-default)",
+                    borderRadius: 12,
+                    padding: 16,
+                    marginBottom: 12,
+                  }}
+                >
+                  <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text-secondary)" }}>{t.name}</div>
+                  <div style={{ fontSize: 12, color: "var(--text-faint)", marginTop: 3 }}>
+                    {t.exercises?.length || 0} exercise{(t.exercises?.length !== 1) ? "s" : ""} ·{" "}
+                    {t.exercises?.reduce((a, e) => a + (e.sets?.length || 0), 0) || 0} sets
+                  </div>
+                  <div style={{ marginTop: 6, display: "flex", flexWrap: "wrap", gap: 4 }}>
+                    {t.exercises?.map((e) => (
+                      <span
+                        key={e.id}
+                        style={{
+                          fontSize: 11,
+                          padding: "2px 8px",
+                          background: "var(--bg-tab)",
+                          borderRadius: 99,
+                          color: "var(--text-muted)",
+                        }}
+                      >
+                        {e.name}
+                      </span>
+                    ))}
+                  </div>
+                  <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                    <button
+                      onClick={() => setActiveWorkout(t)}
+                      style={{
+                        flex: 1,
+                        padding: 9,
+                        borderRadius: 9,
+                        border: "none",
+                        background: "var(--accent-blue)",
+                        color: "#fff",
+                        fontWeight: 700,
+                        cursor: "pointer",
+                        fontSize: 13,
+                      }}
+                    >
+                      ▶ Start
+                    </button>
+                    <button
+                      onClick={() => handleCloneTemplate(t)}
+                      style={{
+                        flex: 1,
+                        padding: 9,
+                        borderRadius: 9,
+                        border: "1px solid var(--border-default)",
+                        background: "var(--bg-card)",
+                        color: "var(--text-muted)",
+                        cursor: "pointer",
+                        fontSize: 13,
+                        fontWeight: 600,
+                      }}
+                    >
+                      📥 Copy to My Templates
+                    </button>
                   </div>
                 </div>
               ))

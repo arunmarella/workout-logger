@@ -42,6 +42,7 @@ function WatchPageContent() {
   // View state management based on workout status
   useEffect(() => {
     if (workout && view !== "summary") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setView("workout");
     } else if (!workout && view === "workout") {
       setView("templates");

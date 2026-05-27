@@ -23,7 +23,8 @@ export default function ActiveWorkout({ template, onFinish, onCancel }) {
         workout: syncedWorkout,
         sessionId,
         updateWorkout,
-        finishWorkout: completeSyncedWorkout
+        finishWorkout: completeSyncedWorkout,
+        startWorkout
     } = useWorkoutState({ initialTemplate: template });
 
     useEffect(() => {
@@ -34,11 +35,12 @@ export default function ActiveWorkout({ template, onFinish, onCancel }) {
     }, [template, sessionId, startWorkout]);
 
     const [restingSet, setRestingSet] = useState(null);
+    const [initialTime] = useState(() => Date.now());
 
     // Initial fallback logs - in a real app, you might want to show a spinner
     // until syncedWorkout is ready.
     const logs = syncedWorkout ? syncedWorkout.exercises : [];
-    const startTime = syncedWorkout ? syncedWorkout.startTime : Date.now();
+    const startTime = syncedWorkout ? syncedWorkout.startTime : initialTime;
 
     const update = (ei, si, f, v) => {
         if (!syncedWorkout) return;
