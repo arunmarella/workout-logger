@@ -116,6 +116,68 @@ input, button, div {
   transform: scale(0.95);
 }
 
+/* Responsive Header Styles */
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 600px;
+  margin: 0 auto;
+  gap: 12px;
+}
+
+.header-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.header-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-tab);
+  border-radius: 10px;
+  padding: 3px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+@media (max-width: 550px) {
+  .header-container {
+    display: grid;
+    grid-template-areas:
+      "title actions"
+      "tabs tabs";
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+  }
+
+  .header-title {
+    grid-area: title;
+    align-self: center;
+  }
+
+  .header-actions {
+    grid-area: actions;
+    justify-self: end;
+  }
+
+  .header-tabs {
+    grid-area: tabs;
+    width: 100%;
+  }
+
+  .header-tabs button {
+    flex: 1;
+    text-align: center;
+  }
+}
+
 /* ─── Apple Watch Specific Styles ─── */
 :root {
   --watch-bg: #000000;

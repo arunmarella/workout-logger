@@ -218,17 +218,30 @@ export default function Home() {
           zIndex: 10,
         }}
       >
-        <div
-          style={{
-            maxWidth: 600,
-            margin: "0 auto",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <div style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)" }}>💪 Rep Journal</div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div className="header-container">
+          <div className="header-title">💪 Rep Journal</div>
+          <div className="header-tabs">
+            {["templates", "library", "history"].map((t) => (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                style={{
+                  padding: "6px 14px",
+                  borderRadius: 8,
+                  border: "none",
+                  background: tab === t ? "var(--bg-tab-active)" : "transparent",
+                  color: tab === t ? "var(--text-secondary)" : "var(--text-muted)",
+                  fontWeight: tab === t ? 600 : 400,
+                  cursor: "pointer",
+                  fontSize: 13,
+                  boxShadow: tab === t ? "var(--shadow-tab)" : "none",
+                }}
+              >
+                {t === "templates" ? "My Templates" : t === "library" ? "Library" : "History"}
+              </button>
+            ))}
+          </div>
+          <div className="header-actions">
             <a
               href="/watch"
               target="_blank"
@@ -248,29 +261,6 @@ export default function Home() {
             >
               ⌚️
             </a>
-            <div
-              style={{ display: "flex", gap: 4, background: "var(--bg-tab)", borderRadius: 10, padding: 3 }}
-            >
-              {["templates", "library", "history"].map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setTab(t)}
-                  style={{
-                    padding: "6px 14px",
-                    borderRadius: 8,
-                    border: "none",
-                    background: tab === t ? "var(--bg-tab-active)" : "transparent",
-                    color: tab === t ? "var(--text-secondary)" : "var(--text-muted)",
-                    fontWeight: tab === t ? 600 : 400,
-                    cursor: "pointer",
-                    fontSize: 13,
-                    boxShadow: tab === t ? "var(--shadow-tab)" : "none",
-                  }}
-                >
-                  {t === "templates" ? "My Templates" : t === "library" ? "Library" : "History"}
-                </button>
-              ))}
-            </div>
             <button
               onClick={toggleTheme}
               className="theme-toggle"
@@ -285,7 +275,12 @@ export default function Home() {
                 background: "none",
                 border: "none",
                 fontSize: 18,
-                cursor: "pointer"
+                cursor: "pointer",
+                width: 36,
+                height: 36,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center"
               }}
               title="Sign Out"
             >
