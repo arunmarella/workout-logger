@@ -1,14 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 
-export default function Auth() {
+export default function Auth({ onGuestAccess, initialSignUp = false }) {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(initialSignUp);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    setIsSignUp(initialSignUp);
+  }, [initialSignUp]);
 
   const handleAuth = async (e) => {
     e.preventDefault();
@@ -139,6 +143,31 @@ export default function Auth() {
           >
             {loading ? "Please wait..." : (isSignUp ? "Sign Up" : "Log In")}
           </button>
+
+          {onGuestAccess && (
+            <button
+              type="button"
+              onClick={onGuestAccess}
+              style={{
+                width: '100%',
+                padding: '12px',
+                borderRadius: '8px',
+                background: 'transparent',
+                color: 'var(--text-secondary)',
+                fontSize: '15px',
+                fontWeight: '600',
+                border: '1px solid var(--border-default)',
+                cursor: 'pointer',
+                marginTop: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px'
+              }}
+            >
+              🔑 Continue as Guest
+            </button>
+          )}
         </form>
 
         <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '14px', color: 'var(--text-secondary)' }}>

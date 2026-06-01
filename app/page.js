@@ -18,9 +18,16 @@ import History from "@/components/History";
 import Auth from "@/components/Auth";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/lib/supabase";
+import { isAdmin } from "@/lib/admin";
 
 export default function Home() {
   const { user, loading: authLoading } = useAuth();
+  const [isGuest, setIsGuest] = useState(false);
+  const [guestChecked, setGuestChecked] = useState(false);
+  const [authSignUpView, setAuthSignUpView] = useState(false);
+  const [signUpPrompt, setSignUpPrompt] = useState(null);
+  const [pendingWorkoutLog, setPendingWorkoutLog] = useState(null);
+
   const [data, setData] = useState({ templates: [], history: [] });
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState("templates");
@@ -28,8 +35,21 @@ export default function Home() {
   const [activeWorkout, setActiveWorkout] = useState(null);
   const { theme, toggleTheme } = useTheme();
 
+  // Load guest state from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const g = localStorage.getItem("workout_logger_guest") === "true";
+      setIsGuest(g);
+      if (g) {
+        setTab("library");
+      }
+      setGuestChecked(true);
+    }
+  }, []);
+
   useEffect(() => {
     console.warn("DEBUG: App useEffect mounted.");
+    if (!guestChecked) return;
     
     // SAFE BOOT: Force loading to end after 5 seconds no matter what
     const safeBoot = setTimeout(() => {
@@ -48,19 +68,38 @@ export default function Home() {
         const remoteData = await fetchAllData();
         console.warn("DEBUG: fetchAllData returned.");
         
-        // Simple migration logic
-        const localData = loadLocalData();
-        if (remoteData.templates.length === 0 && localData.templates.length > 0) {
-          console.warn("DEBUG: Migration required.");
-          // ... migrations ...
-          for (const t of localData.templates) await upsertTemplate(t);
-          for (const h of localData.history) await saveHistory(h);
-          const finalData = await fetchAllData();
-          setData(finalData);
-          console.warn("DEBUG: Migration complete.");
-          clearLocalData();
+        // Recover pending guest workout if they just logged in/signed up!
+        if (user) {
+          const pendingWorkoutStr = localStorage.getItem("pending_workout");
+          if (pendingWorkoutStr) {
+            try {
+              const pendingWorkout = JSON.parse(pendingWorkoutStr);
+              await saveHistory(pendingWorkout);
+              localStorage.removeItem("pending_workout");
+              alert("Your guest workout has been successfully saved to your history!");
+            } catch (e) {
+              console.error("Failed to save pending guest workout:", e);
+            }
+          }
+        }
+
+        if (user) {
+          // Simple migration logic (only for authenticated users migrating from local storage)
+          const localData = loadLocalData();
+          if (remoteData.templates.length === 0 && localData.templates.length > 0) {
+            console.warn("DEBUG: Migration required.");
+            for (const t of localData.templates) await upsertTemplate(t);
+            for (const h of localData.history) await saveHistory(h);
+            const finalData = await fetchAllData();
+            setData(finalData);
+            console.warn("DEBUG: Migration complete.");
+            clearLocalData();
+          } else {
+            console.warn("DEBUG: No migration needed.");
+            setData(remoteData);
+          }
         } else {
-          console.warn("DEBUG: No migration needed.");
+          // Guest mode or loading system templates for guest
           setData(remoteData);
         }
       } catch (err) {
@@ -72,17 +111,28 @@ export default function Home() {
       }
     }
     
-    if (user) {
+    if (user || isGuest) {
       init();
     } else {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, isGuest, guestChecked]);
 
   const userTemplates = data.templates.filter((t) => !t.is_system);
   const systemTemplates = data.templates.filter((t) => t.is_system);
 
+  const triggerSignUpPrompt = (context, pendingLog = null) => {
+    setSignUpPrompt(context);
+    if (pendingLog) {
+      setPendingWorkoutLog(pendingLog);
+    }
+  };
+
   const handleCloneTemplate = async (template) => {
+    if (isGuest) {
+      triggerSignUpPrompt("copy");
+      return;
+    }
     try {
       const clonedTemplate = {
         id: crypto.randomUUID(),
@@ -91,6 +141,7 @@ export default function Home() {
           ...ex,
           id: Math.random().toString(36).slice(2, 9),
         })),
+        is_system: false
       };
       await upsertTemplate(clonedTemplate);
       const updatedData = await fetchAllData();
@@ -140,7 +191,7 @@ export default function Home() {
     console.log("Triggering deleteTemplate for ID:", id);
     if (!confirm("Are you sure you want to delete this template?")) return;
     try {
-      await removeTemplate(id);
+      await removeTemplate(id, false);
       const updatedData = await fetchAllData();
       setData(updatedData);
     } catch (err) {
@@ -148,7 +199,23 @@ export default function Home() {
     }
   };
 
+  const handleAdminDeleteTemplate = async (id) => {
+    console.log("Triggering handleAdminDeleteTemplate for ID:", id);
+    if (!confirm("Are you sure you want to delete this global system template? This will remove it for all users!")) return;
+    try {
+      await removeTemplate(id, true);
+      const updatedData = await fetchAllData();
+      setData(updatedData);
+    } catch (err) {
+      alert("Failed to delete system template: " + err.message);
+    }
+  };
+
   const finishWorkout = async (log) => {
+    if (isGuest) {
+      triggerSignUpPrompt("finish_workout", log);
+      return;
+    }
     try {
       await saveHistory(log);
       const updatedData = await fetchAllData();
@@ -160,7 +227,163 @@ export default function Home() {
     }
   };
 
-  if (authLoading || (loading && user)) {
+  // SignUp Prompt Modal
+  const renderSignUpModal = () => {
+    if (!signUpPrompt) return null;
+
+    let title = "Join Rep Journal";
+    let message = "Create an account or sign in to access this feature.";
+    let primaryBtnText = "Sign Up / Log In";
+    let secondaryBtnText = "Cancel";
+    let showDiscard = false;
+
+    if (signUpPrompt === "copy") {
+      title = "Customize Your Workouts";
+      message = "Sign up or log in to copy library templates, customize exercises, and design your own routines.";
+    } else if (signUpPrompt === "history") {
+      title = "Track Your Progress";
+      message = "Creating an account lets you save your workout history, view past performances, and track your consistency over time.";
+    } else if (signUpPrompt === "templates") {
+      title = "Build Your Routine";
+      message = "Create and customize your own workout templates. Sign up or log in to save your personal routines.";
+    } else if (signUpPrompt === "finish_workout") {
+      title = "Save Your Workout!";
+      message = "Sign up now to save this workout log to your history and track your progress.";
+      primaryBtnText = "Sign Up & Save";
+      secondaryBtnText = "Discard Workout";
+      showDiscard = true;
+    }
+
+    const handlePrimary = () => {
+      if (signUpPrompt === "finish_workout" && pendingWorkoutLog) {
+        localStorage.setItem("pending_workout", JSON.stringify(pendingWorkoutLog));
+      }
+      setSignUpPrompt(null);
+      setPendingWorkoutLog(null);
+      localStorage.removeItem("workout_logger_guest");
+      setIsGuest(false);
+      setAuthSignUpView(true);
+      setActiveWorkout(null);
+      setEditing(null);
+    };
+
+    const handleCancel = () => {
+      setSignUpPrompt(null);
+      setPendingWorkoutLog(null);
+    };
+
+    const handleDiscard = () => {
+      setSignUpPrompt(null);
+      setPendingWorkoutLog(null);
+      setActiveWorkout(null);
+      setTab("library");
+    };
+
+    return (
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.65)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000,
+        backdropFilter: 'blur(4px)',
+        padding: '20px'
+      }}>
+        <div style={{
+          maxWidth: '400px',
+          width: '100%',
+          background: 'var(--bg-card)',
+          borderRadius: '16px',
+          padding: '24px',
+          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.3)',
+          border: '1px solid var(--border-default)',
+          textAlign: 'center'
+        }}>
+          <div style={{ fontSize: '48px', marginBottom: '16px' }}>
+            {signUpPrompt === "finish_workout" ? "🏆" : "🔒"}
+          </div>
+          <h2 style={{
+            fontSize: '20px',
+            fontWeight: 'bold',
+            marginBottom: '10px',
+            color: 'var(--text-primary)'
+          }}>
+            {title}
+          </h2>
+          <p style={{
+            fontSize: '14px',
+            color: 'var(--text-muted)',
+            lineHeight: '1.5',
+            marginBottom: '24px'
+          }}>
+            {message}
+          </p>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <button
+              onClick={handlePrimary}
+              style={{
+                width: '100%',
+                padding: '12px',
+                borderRadius: '8px',
+                background: 'var(--accent-blue)',
+                color: 'white',
+                fontSize: '15px',
+                fontWeight: 'bold',
+                border: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              {primaryBtnText}
+            </button>
+
+            {showDiscard && (
+              <button
+                onClick={handleDiscard}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  background: 'transparent',
+                  color: 'var(--text-danger)',
+                  fontSize: '15px',
+                  fontWeight: 'bold',
+                  border: '1px solid var(--border-danger)',
+                  cursor: 'pointer'
+                }}
+              >
+                Discard Workout
+              </button>
+            )}
+
+            <button
+              onClick={handleCancel}
+              style={{
+                width: '100%',
+                padding: '12px',
+                borderRadius: '8px',
+                background: 'transparent',
+                color: 'var(--text-secondary)',
+                fontSize: '15px',
+                fontWeight: '500',
+                border: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              {showDiscard ? "Back to Workout" : secondaryBtnText}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  if (authLoading || !guestChecked || (loading && (user || isGuest))) {
     return (
       <div style={{ 
         minHeight: "100vh", 
@@ -178,8 +401,17 @@ export default function Home() {
     );
   }
 
-  if (!user) {
-    return <Auth />;
+  if (!user && !isGuest) {
+    return (
+      <Auth 
+        onGuestAccess={() => {
+          localStorage.setItem("workout_logger_guest", "true");
+          setIsGuest(true);
+          setTab("library");
+        }}
+        initialSignUp={authSignUpView}
+      />
+    );
   }
 
   if (activeWorkout) {
@@ -224,7 +456,13 @@ export default function Home() {
             {["templates", "library", "history"].map((t) => (
               <button
                 key={t}
-                onClick={() => setTab(t)}
+                onClick={() => {
+                  if (isGuest && (t === "templates" || t === "history")) {
+                    triggerSignUpPrompt(t);
+                  } else {
+                    setTab(t);
+                  }
+                }}
                 style={{
                   padding: "6px 14px",
                   borderRadius: 8,
@@ -237,7 +475,11 @@ export default function Home() {
                   boxShadow: tab === t ? "var(--shadow-tab)" : "none",
                 }}
               >
-                {t === "templates" ? "My Templates" : t === "library" ? "Library" : "History"}
+                {t === "templates" 
+                  ? `My Templates${isGuest ? " 🔒" : ""}` 
+                  : t === "library" 
+                    ? "Library" 
+                    : `History${isGuest ? " 🔒" : ""}`}
               </button>
             ))}
           </div>
@@ -270,7 +512,15 @@ export default function Home() {
               {theme === "light" ? "🌙" : "☀️"}
             </button>
             <button
-              onClick={() => supabase.auth.signOut()}
+              onClick={() => {
+                if (isGuest) {
+                  localStorage.removeItem("workout_logger_guest");
+                  setIsGuest(false);
+                  setAuthSignUpView(false);
+                } else {
+                  supabase.auth.signOut();
+                }
+              }}
               style={{
                 background: "none",
                 border: "none",
@@ -282,7 +532,8 @@ export default function Home() {
                 alignItems: "center",
                 justifyContent: "center"
               }}
-              title="Sign Out"
+              title={isGuest ? "Exit Guest Mode" : "Sign Out"}
+              aria-label={isGuest ? "Exit Guest Mode" : "Sign Out"}
             >
               🚪
             </button>
@@ -417,7 +668,26 @@ export default function Home() {
                 marginBottom: 16,
               }}
             >
-              <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)" }}>Template Library</div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)" }}>
+                Template Library {isAdmin(user) && <span style={{ fontSize: 11, padding: '2px 6px', background: 'var(--accent-blue)', color: 'white', borderRadius: 4, marginLeft: 8, fontWeight: 600 }}>Admin</span>}
+              </div>
+              {isAdmin(user) && (
+                <button
+                  onClick={() => setEditing({ is_system: true })}
+                  style={{
+                    padding: "7px 14px",
+                    borderRadius: 9,
+                    border: "none",
+                    background: "var(--accent-blue)",
+                    color: "#fff",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    fontSize: 13,
+                  }}
+                >
+                  + New System
+                </button>
+              )}
             </div>
             {systemTemplates.length === 0 ? (
               <div style={{ textAlign: "center", padding: "60px 0", color: "var(--text-faint)" }}>
@@ -461,7 +731,7 @@ export default function Home() {
                     <button
                       onClick={() => setActiveWorkout(t)}
                       style={{
-                        flex: 1,
+                        flex: isAdmin(user) ? 2 : 1,
                         padding: 9,
                         borderRadius: 9,
                         border: "none",
@@ -474,22 +744,56 @@ export default function Home() {
                     >
                       ▶ Start
                     </button>
-                    <button
-                      onClick={() => handleCloneTemplate(t)}
-                      style={{
-                        flex: 1,
-                        padding: 9,
-                        borderRadius: 9,
-                        border: "1px solid var(--border-default)",
-                        background: "var(--bg-card)",
-                        color: "var(--text-muted)",
-                        cursor: "pointer",
-                        fontSize: 13,
-                        fontWeight: 600,
-                      }}
-                    >
-                      📥 Copy to My Templates
-                    </button>
+                    {isAdmin(user) ? (
+                      <>
+                        <button
+                          onClick={() => setEditing(t)}
+                          style={{
+                            flex: 1,
+                            padding: 9,
+                            borderRadius: 9,
+                            border: "1px solid var(--border-default)",
+                            background: "var(--bg-card)",
+                            color: "var(--text-muted)",
+                            cursor: "pointer",
+                            fontSize: 13,
+                          }}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleAdminDeleteTemplate(t.id)}
+                          style={{
+                            padding: "9px 12px",
+                            borderRadius: 9,
+                            border: "1px solid var(--border-danger)",
+                            background: "var(--bg-card)",
+                            color: "var(--text-danger)",
+                            cursor: "pointer",
+                            fontSize: 13,
+                          }}
+                        >
+                          ✕
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={() => handleCloneTemplate(t)}
+                        style={{
+                          flex: 1,
+                          padding: 9,
+                          borderRadius: 9,
+                          border: "1px solid var(--border-default)",
+                          background: "var(--bg-card)",
+                          color: "var(--text-muted)",
+                          cursor: "pointer",
+                          fontSize: 13,
+                          fontWeight: 600,
+                        }}
+                      >
+                        📥 Copy to My Templates
+                      </button>
+                    )}
                   </div>
                 </div>
               ))
@@ -504,6 +808,7 @@ export default function Home() {
           />
         )}
       </div>
+      {renderSignUpModal()}
     </div>
   );
 }
