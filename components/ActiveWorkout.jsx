@@ -20,21 +20,48 @@ const hapticNotification = async (type = NotificationType.Success) => {
     } catch (e) {}
 };
 
-export default function ActiveWorkout({ template, onFinish, onCancel, previousMap = {} }) {
+export default function ActiveWorkout({ template, onFinish, onCancel, previousMap = {}, initialWorkout = null, initialSessionId = null }) {
     const {
         workout: syncedWorkout,
         sessionId,
         updateWorkout,
         finishWorkout: completeSyncedWorkout,
         startWorkout
-    } = useWorkoutState({ initialTemplate: template });
+    } = useWorkoutState({ initialTemplate: template, initialWorkout, sessionId: initialSessionId });
+
+    // Keep the phone's screen awake while a workout is active. Phones
+    // auto-lock after a minute or so, and unlocking mid-set to log the next
+    // one is the single most annoying thing about logging on a phone.
+    // Silent no-op where the API is unavailable (older WKWebView); the lock
+    // is released by the OS when the page hides, so re-acquire on return.
+    useEffect(() => {
+        let lock = null;
+        const acquire = async () => {
+            try {
+                if (!("wakeLock" in navigator) || !navigator.wakeLock?.request) return;
+                lock = await navigator.wakeLock.request("screen");
+                lock.addEventListener("release", () => { lock = null; });
+            } catch (e) { /* denied or unsupported — carry on without it */ }
+        };
+        const onVisibility = () => {
+            if (document.visibilityState === "visible" && !lock) acquire();
+        };
+        acquire();
+        document.addEventListener("visibilitychange", onVisibility);
+        return () => {
+            document.removeEventListener("visibilitychange", onVisibility);
+            try { lock?.release(); } catch (e) {}
+        };
+    }, []);
 
     useEffect(() => {
-        // Automatically start a synced session if none exists
-        if (template && !sessionId) {
+        // Automatically start a synced session if none exists — unless
+        // we're resuming a saved in-progress workout, which already has
+        // its sets (starting fresh would wipe them).
+        if (template && !sessionId && !initialWorkout) {
             startWorkout(template);
         }
-    }, [template, sessionId, startWorkout]);
+    }, [template, sessionId, initialWorkout, startWorkout]);
 
     const [restingSet, setRestingSet] = useState(null);
     const [showSummary, setShowSummary] = useState(false);
@@ -210,14 +237,7 @@ export default function ActiveWorkout({ template, onFinish, onCancel, previousMa
                             Last: {previousMap[ex.name].sets.map((s) => `${s.weight > 0 ? `${s.weight} lb × ` : ""}${s.reps}`).join(", ")}
                         </div>
                     )}
-                    <div
-                        style={{
-                            display: "grid",
-                            gridTemplateColumns: "24px 1fr 1fr 1fr 72px 32px",
-                            gap: "6px 8px",
-                            alignItems: "center",
-                        }}
-                    >
+                    <div className="set-grid">
                         <div className="mono" style={{ fontSize: 11, color: "var(--text-faint)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>#</div>
                         <div className="mono" style={{ fontSize: 11, color: "var(--text-faint)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>Reps</div>
                         <div className="mono" style={{ fontSize: 11, color: "var(--text-faint)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>Wt (lbs)</div>

@@ -16,6 +16,7 @@ import { accentFor, iconFor, washFor } from "@/lib/accent";
 import { BookOpen, Copy, Dumbbell, KeyRound, Lock, LogOut, Moon, Play, Sun, Trophy, Watch, X } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
 import ActiveWorkout from "@/components/ActiveWorkout";
+import { readActiveWorkoutDraft, clearActiveWorkoutDraft } from "@/hooks/useWorkoutState";
 import TemplateEditor from "@/components/TemplateEditor";
 import History from "@/components/History";
 import Auth from "@/components/Auth";
@@ -36,6 +37,11 @@ export default function Home() {
   const [tab, setTab] = useState("templates");
   const [editing, setEditing] = useState(null);
   const [activeWorkout, setActiveWorkout] = useState(null);
+  // An unfinished workout saved before a reload / OS reclaim, offered back
+  // as "Resume". resumeSource is the draft handed to ActiveWorkout when
+  // the user taps Resume; it is null for a fresh start.
+  const [resumeDraft, setResumeDraft] = useState(null);
+  const [resumeSource, setResumeSource] = useState(null);
   const { theme, toggleTheme } = useTheme();
 
   // Load guest state from localStorage on mount
@@ -47,8 +53,17 @@ export default function Home() {
         setTab("library");
       }
       setGuestChecked(true);
+      setResumeDraft(readActiveWorkoutDraft());
     }
   }, []);
+
+  // Starting a fresh workout supersedes any saved draft — don't offer to
+  // resume a workout that was just replaced.
+  useEffect(() => {
+    if (activeWorkout && !resumeSource) {
+      setResumeDraft(null);
+    }
+  }, [activeWorkout, resumeSource]);
 
   useEffect(() => {
     console.warn("DEBUG: App useEffect mounted.");
@@ -223,6 +238,8 @@ export default function Home() {
       await saveHistory(log);
       const updatedData = await fetchAllData();
       setData(updatedData);
+      setResumeSource(null);
+      setResumeDraft(null);
       setActiveWorkout(null);
       setTab("history");
     } catch (err) {
@@ -266,6 +283,8 @@ export default function Home() {
       localStorage.removeItem("workout_logger_guest");
       setIsGuest(false);
       setAuthSignUpView(true);
+      setResumeSource(null);
+      setResumeDraft(null);
       setActiveWorkout(null);
       setEditing(null);
     };
@@ -276,8 +295,11 @@ export default function Home() {
     };
 
     const handleDiscard = () => {
+      clearActiveWorkoutDraft();
       setSignUpPrompt(null);
       setPendingWorkoutLog(null);
+      setResumeSource(null);
+      setResumeDraft(null);
       setActiveWorkout(null);
       setTab("library");
     };
@@ -385,8 +407,16 @@ export default function Home() {
         <ActiveWorkout
           template={activeWorkout}
           previousMap={buildPreviousMap(data.history)}
+          initialWorkout={resumeSource?.workout ?? null}
+          initialSessionId={resumeSource?.sessionId ?? null}
           onFinish={finishWorkout}
-          onCancel={() => setActiveWorkout(null)}
+          onCancel={() => {
+            // Abandoning the workout means the saved draft goes too.
+            clearActiveWorkoutDraft();
+            setResumeSource(null);
+            setResumeDraft(null);
+            setActiveWorkout(null);
+          }}
         />
       </div>
     );
@@ -475,6 +505,43 @@ export default function Home() {
         </div>
       </div>
       <div style={{ maxWidth: 600, margin: "0 auto", padding: "20px 16px" }}>
+        {resumeDraft && !activeWorkout && (
+          <div className="card fade-up" style={{ padding: 16, marginBottom: 16 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+              <div style={{ minWidth: 0 }}>
+                <div className="eyebrow">Unfinished workout</div>
+                <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: "-0.01em", color: "var(--text-primary)", marginTop: 4 }}>{resumeDraft.workout.name}</div>
+                <div style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 600, marginTop: 2 }}>
+                  {resumeDraft.workout.exercises.reduce((a, ex) => a + ex.sets.filter((s) => s.done).length, 0)}/
+                  {resumeDraft.workout.exercises.reduce((a, ex) => a + ex.sets.length, 0)} sets · started{" "}
+                  {Math.max(1, Math.round((Date.now() - resumeDraft.workout.startTime) / 60000))} min ago
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                <button
+                  onClick={() => {
+                    clearActiveWorkoutDraft();
+                    setResumeDraft(null);
+                  }}
+                  className="btn btn-ghost"
+                  style={{ padding: "8px 12px", fontSize: 13 }}
+                >
+                  Discard
+                </button>
+                <button
+                  onClick={() => {
+                    setResumeSource(resumeDraft);
+                    setActiveWorkout(resumeDraft.workout);
+                  }}
+                  className="btn btn-primary"
+                  style={{ padding: "8px 14px", fontSize: 13 }}
+                >
+                  Resume
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         {tab === "templates" && (
           <>
             <div

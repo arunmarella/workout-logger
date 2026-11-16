@@ -306,7 +306,7 @@ button {
   border: 1.5px solid var(--border-default);
   background: var(--bg-input);
   color: var(--text-primary);
-  font-size: 15px;
+  font-size: 16px;
   font-family: inherit;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
@@ -322,7 +322,9 @@ button {
   padding: 6px 8px;
   border: 1.5px solid var(--border-default);
   border-radius: 4px;
-  font-size: 13px;
+  /* 16px: anything smaller makes iOS zoom the whole page on focus, so
+     every tap into a set input would shift the layout. */
+  font-size: 16px;
   font-family: inherit;
   background: var(--bg-input);
   color: var(--text-primary);
@@ -748,6 +750,32 @@ button {
 
 .check-btn:active {
   transform: scale(0.94);
+}
+
+/* ─── Set grid — the per-exercise Reps / Weight / Notes table ─── */
+.set-grid {
+  display: grid;
+  grid-template-columns: 24px 1fr 1fr 1fr 72px 32px;
+  gap: 6px 8px;
+  align-items: center;
+}
+
+/* Phones: six columns leave ~52px inputs that are impossible to tap
+   accurately. Drop Notes and Previous — per-set notes are rarely used
+   mid-workout and previous sets already show in the exercise "Last:" line —
+   so Reps/Weight get room and the check target grows to 40px. */
+@media (max-width: 480px) {
+  .set-grid {
+    grid-template-columns: 24px 1fr 1fr 40px;
+  }
+  .set-grid > :nth-child(6n+4),
+  .set-grid > :nth-child(6n+5) {
+    display: none;
+  }
+  .check-btn {
+    width: 40px;
+    height: 40px;
+  }
 }
 
 /* ─── Auth hero — flat solid color block, huge heavy headline ─── */

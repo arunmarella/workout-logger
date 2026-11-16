@@ -8,20 +8,57 @@ import { genId } from "@/lib/data";
  * useWorkoutState
  * Manages the lifecycle and real-time synchronization of a workout.
  */
-export function useWorkoutState({ sessionId: initialSessionId = null, initialTemplate = null } = {}) {
+
+// localStorage key for the in-progress workout draft. Guests have no
+// Supabase session, so without this a reload — or iOS reclaiming the
+// WebView while the user is in another app mid-workout — loses every set
+// already done. Logged-in users get it as a second layer under the
+// active_workouts row.
+export const ACTIVE_WORKOUT_DRAFT_KEY = "active_workout_draft";
+
+export function clearActiveWorkoutDraft() {
+  try {
+    localStorage.removeItem(ACTIVE_WORKOUT_DRAFT_KEY);
+  } catch (e) {}
+}
+
+export function readActiveWorkoutDraft() {
+  try {
+    const raw = localStorage.getItem(ACTIVE_WORKOUT_DRAFT_KEY);
+    if (!raw) return null;
+    const draft = JSON.parse(raw);
+    if (!draft?.workout?.exercises || !draft.workout.startTime) return null;
+    // A draft older than a day is stale — drop it rather than resurfacing
+    // a workout from last week.
+    if (Date.now() - (draft.savedAt || 0) > 24 * 60 * 60 * 1000) {
+      clearActiveWorkoutDraft();
+      return null;
+    }
+    return draft;
+  } catch (e) {
+    return null;
+  }
+}
+export function useWorkoutState({ sessionId: initialSessionId = null, initialTemplate = null, initialWorkout = null } = {}) {
   const [sessionId, setSessionId] = useState(initialSessionId);
   const [workout, setWorkout] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState(null);
-  
+
   // Ref to track if the last state change was from a remote source
   // to avoid infinite loops when updating the server.
   const remoteUpdateRef = useRef(false);
 
-  // Initialize workout from template if provided
+  // Initialize workout: a resumed in-progress workout wins over the
+  // template, so a reload mid-workout restores the sets already done.
   useEffect(() => {
-    if (initialTemplate && !workout) {
+    if (workout) return;
+    if (initialWorkout) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
+      setWorkout(initialWorkout);
+      return;
+    }
+    if (initialTemplate) {
       setWorkout({
         ...initialTemplate,
         startTime: Date.now(),
@@ -36,7 +73,7 @@ export function useWorkoutState({ sessionId: initialSessionId = null, initialTem
         }))
       });
     }
-  }, [initialTemplate, workout]);
+  }, [initialTemplate, initialWorkout, workout]);
 
   // Handle Realtime Subscription
   useEffect(() => {
@@ -81,6 +118,19 @@ export function useWorkoutState({ sessionId: initialSessionId = null, initialTem
     };
   }, [sessionId]);
 
+
+  // Persist the in-progress workout locally so it survives a reload or
+  // the OS reclaiming the WebView mid-workout (guests have no Supabase
+  // session to fall back on). Debounced like the remote sync below.
+  useEffect(() => {
+    if (!workout) return;
+    const timer = setTimeout(() => {
+      try {
+        localStorage.setItem(ACTIVE_WORKOUT_DRAFT_KEY, JSON.stringify({ workout, sessionId, savedAt: Date.now() }));
+      } catch (e) {}
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [workout, sessionId]);
 
   // Sync state to Supabase when workout changes
   useEffect(() => {
@@ -163,6 +213,9 @@ export function useWorkoutState({ sessionId: initialSessionId = null, initialTem
         exercises: workout.exercises,
       });
     }
+
+    // The workout is done — the draft must not come back as "resume".
+    clearActiveWorkoutDraft();
 
     // Cleanup active session
     if (sessionId) {
