@@ -57,15 +57,8 @@ export default function ExerciseAutocomplete({ value, onChange, placeholder }) {
                 }}
                 onFocus={() => setIsOpen(true)}
                 placeholder={placeholder}
-                style={{
-                    width: "100%",
-                    padding: "7px 10px",
-                    borderRadius: 8,
-                    border: "1px solid var(--border-default)",
-                    fontSize: 14,
-                    background: "var(--bg-input)",
-                    color: "var(--text-primary)",
-                }}
+                className="input"
+                style={{ padding: "9px 12px", fontSize: 14 }}
             />
             {isOpen && (query.length >= 2 || results.length > 0) && (
                 <div
@@ -76,12 +69,12 @@ export default function ExerciseAutocomplete({ value, onChange, placeholder }) {
                         right: 0,
                         zIndex: 100,
                         background: "var(--bg-card)",
-                        border: "1px solid var(--border-default)",
-                        borderRadius: 10,
-                        marginTop: 4,
+                        border: "1.5px solid var(--border-default)",
+                        borderRadius: 4,
+                        marginTop: 6,
                         maxHeight: 300,
                         overflowY: "auto",
-                        boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
+                        boxShadow: "var(--shadow-card-hard)",
                     }}
                 >
                     {loading && (
@@ -98,7 +91,8 @@ export default function ExerciseAutocomplete({ value, onChange, placeholder }) {
                             style={{
                                 padding: "10px 12px",
                                 fontSize: 13,
-                                color: "var(--accent-blue)",
+                                fontWeight: 700,
+                                color: "var(--brand-1)",
                                 cursor: "pointer",
                                 borderBottom: "1px solid var(--border-default)",
                             }}
@@ -119,34 +113,11 @@ export default function ExerciseAutocomplete({ value, onChange, placeholder }) {
                             onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-tab)")}
                             onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                         >
-                            <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text-secondary)" }}>
+                            <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-secondary)" }}>
                                 {ex.name}
                             </div>
-                            <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
-                                <span
-                                    style={{
-                                        fontSize: 10,
-                                        padding: "1px 6px",
-                                        background: "var(--bg-page)",
-                                        borderRadius: 4,
-                                        color: "var(--text-muted)",
-                                        textTransform: "capitalize",
-                                    }}
-                                >
-                                    {ex.muscle_group}
-                                </span>
-                                <span
-                                    style={{
-                                        fontSize: 10,
-                                        padding: "1px 6px",
-                                        background: "var(--bg-page)",
-                                        borderRadius: 4,
-                                        color: "var(--text-muted)",
-                                        textTransform: "capitalize",
-                                    }}
-                                >
-                                    {ex.equipment}
-                                </span>
+                            <div style={{ fontSize: 11, color: "var(--text-faint)", fontWeight: 600, marginTop: 3, textTransform: "capitalize" }}>
+                                {[ex.muscle_group, ex.equipment].filter(Boolean).join(" · ")}
                             </div>
                         </div>
                     ))}

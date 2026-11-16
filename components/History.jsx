@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
+import { accentFor } from "@/lib/accent";
 
 const hapticImpact = async (style = ImpactStyle.Light) => {
     try {
@@ -40,9 +41,10 @@ export default function History({ history, onClear, onDelete }) {
 
     if (!history.length) {
         return (
-            <div style={{ textAlign: "center", padding: "60px 0", color: "var(--text-faint)" }}>
-                <div style={{ fontSize: 36, marginBottom: 8 }}>📋</div>
-                <div style={{ fontSize: 15 }}>No workouts logged yet</div>
+            <div className="card fade-up" style={{ textAlign: "center", padding: "56px 24px", color: "var(--text-faint)" }}>
+                <div className="icon-tile" style={{ margin: "0 auto 16px", width: 64, height: 64, fontSize: 30, borderRadius: 4 }}>📋</div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.01em" }}>No workouts logged yet</div>
+                <div style={{ fontSize: 14, color: "var(--text-muted)", marginTop: 6 }}>Finish your first workout and it will show up here.</div>
             </div>
         );
     }
@@ -57,11 +59,15 @@ export default function History({ history, onClear, onDelete }) {
                     marginBottom: 16,
                 }}
             >
-                <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)" }}>Workout History</div>
+                <div>
+                    <div className="eyebrow">Your progress</div>
+                    <div className="section-title">Workout History</div>
+                </div>
                 <div style={{ display: "flex", gap: 8 }}>
                 <button
                     onClick={exportCsv}
-                    style={{ fontSize: 12, padding: "4px 10px", borderRadius: 7, border: "1px solid var(--border-default)", background: "var(--bg-card)", color: "var(--text-muted)", cursor: "pointer" }}
+                    className="btn btn-ghost"
+                    style={{ fontSize: 12, padding: "6px 12px" }}
                 >
                     Export CSV
                 </button>
@@ -70,15 +76,8 @@ export default function History({ history, onClear, onDelete }) {
                         hapticImpact(ImpactStyle.Heavy);
                         onClear();
                     }}
-                    style={{
-                        fontSize: 12,
-                        padding: "4px 10px",
-                        borderRadius: 7,
-                        border: "1px solid var(--border-danger)",
-                        background: "var(--bg-card)",
-                        color: "var(--text-danger)",
-                        cursor: "pointer",
-                    }}
+                    className="btn btn-danger-ghost"
+                    style={{ fontSize: 12, padding: "6px 12px" }}
                 >
                     Clear All
                 </button>
@@ -86,22 +85,18 @@ export default function History({ history, onClear, onDelete }) {
             </div>
             {/* history is already newest-first from Supabase (date desc);
                 don't reverse it — that was showing oldest first. */}
-            {[...history].sort((a, b) => new Date(b.date) - new Date(a.date)).map((w) => {
+            {[...history].sort((a, b) => new Date(b.date) - new Date(a.date)).map((w, i) => {
                 const d = new Date(w.date);
                 const isOpen = expanded === w.id;
                 const total = w.exercises.reduce((a, e) => a + e.sets.length, 0);
                 const done = w.exercises.reduce((a, e) => a + e.sets.filter((s) => s.done).length, 0);
                 const volume = w.exercises.reduce((a, e) => a + e.sets.reduce((x, s) => x + ((s.actualReps ?? s.reps) || 0) * ((s.actualWeight ?? s.weight) || 0), 0), 0);
+                const accent = accentFor(w.template_name || w.templateName || "");
                 return (
                     <div
                         key={w.id}
-                        style={{
-                            background: "var(--bg-card)",
-                            border: "1px solid var(--border-default)",
-                            borderRadius: 12,
-                            marginBottom: 10,
-                            overflow: "hidden",
-                        }}
+                        className="history-card fade-up"
+                        style={{ "--accent": accent.solid, animationDelay: `${Math.min(i, 8) * 60}ms` }}
                     >
                         <div
                             style={{
@@ -116,7 +111,8 @@ export default function History({ history, onClear, onDelete }) {
                                 onClick={() => setExpanded(isOpen ? null : w.id)}
                                 style={{
                                     flex: 1,
-                                    padding: "14px 16px",
+                                    minWidth: 0,
+                                    padding: "16px 16px 16px 20px",
                                     background: "none",
                                     border: "none",
                                     cursor: "pointer",
@@ -124,13 +120,14 @@ export default function History({ history, onClear, onDelete }) {
                                     justifyContent: "space-between",
                                     alignItems: "center",
                                     textAlign: "left",
+                                    gap: 12,
                                 }}
                             >
-                                <div>
-                                    <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-secondary)" }}>
+                                <div style={{ minWidth: 0 }}>
+                                    <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: "-0.01em", color: "var(--text-primary)" }}>
                                         {w.template_name || w.templateName}
                                     </div>
-                                    <div style={{ fontSize: 12, color: "var(--text-faint)", marginTop: 2 }}>
+                                    <div className="mono" style={{ fontSize: 12, color: "var(--text-faint)", marginTop: 3, fontWeight: 600 }}>
                                         {d.toLocaleDateString(undefined, {
                                             weekday: "short",
                                             month: "short",
@@ -139,7 +136,7 @@ export default function History({ history, onClear, onDelete }) {
                                         · {w.duration}min · {done}/{total} sets{volume > 0 ? ` · ${volume.toLocaleString()} lb` : ""}
                                     </div>
                                 </div>
-                                <span style={{ color: "var(--text-faint)", fontSize: 12 }}>{isOpen ? "▲" : "▼"}</span>
+                                <span style={{ color: "var(--text-faint)", fontSize: 12, flexShrink: 0 }}>{isOpen ? "▲" : "▼"}</span>
                             </button>
                             <button
                                 onClick={(e) => {
@@ -148,12 +145,13 @@ export default function History({ history, onClear, onDelete }) {
                                     onDelete?.(w.id);
                                 }}
                                 style={{
-                                    padding: "14px 16px",
+                                    padding: "16px",
                                     background: "none",
                                     border: "none",
                                     color: "var(--text-danger)",
                                     cursor: "pointer",
                                     fontSize: 14,
+                                    flexShrink: 0,
                                 }}
                                 title="Delete workout"
                             >
@@ -161,11 +159,11 @@ export default function History({ history, onClear, onDelete }) {
                             </button>
                         </div>
                         {isOpen && (
-                            <div style={{ padding: "0 16px 14px" }}>
+                            <div style={{ padding: "0 16px 16px 20px" }}>
                                 {w.exercises.map((ex) => (
-                                    <div key={ex.id} style={{ marginBottom: 10 }}>
+                                    <div key={ex.id} style={{ marginBottom: 12 }}>
                                         <div
-                                            style={{ fontSize: 13, fontWeight: 600, color: "var(--text-muted)", marginBottom: 6 }}
+                                            style={{ fontSize: 13, fontWeight: 800, color: "var(--text-secondary)", marginBottom: 6 }}
                                         >
                                             {ex.name}
                                         </div>
@@ -176,8 +174,9 @@ export default function History({ history, onClear, onDelete }) {
                                                     display: "flex",
                                                     gap: 12,
                                                     fontSize: 12,
+                                                    fontWeight: 600,
                                                     color: s.done ? "var(--accent-green-text)" : "var(--text-faint)",
-                                                    marginBottom: 3,
+                                                    marginBottom: 4,
                                                 }}
                                             >
                                                 <span style={{ width: 16 }}>{s.done ? "✓" : "–"}</span>

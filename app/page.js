@@ -12,6 +12,7 @@ import {
   clearLocalData,
   buildPreviousMap
 } from "@/lib/data";
+import { accentFor, iconFor } from "@/lib/accent";
 import { useTheme } from "@/components/ThemeProvider";
 import ActiveWorkout from "@/components/ActiveWorkout";
 import TemplateEditor from "@/components/TemplateEditor";
@@ -281,36 +282,15 @@ export default function Home() {
     };
 
     return (
-      <div style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.65)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-        backdropFilter: 'blur(4px)',
-        padding: '20px'
-      }}>
-        <div style={{
-          maxWidth: '400px',
-          width: '100%',
-          background: 'var(--bg-card)',
-          borderRadius: '16px',
-          padding: '24px',
-          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.3)',
-          border: '1px solid var(--border-default)',
-          textAlign: 'center'
-        }}>
-          <div style={{ fontSize: '48px', marginBottom: '16px' }}>
+      <div className="modal-overlay">
+        <div className="modal-card">
+          <div className="modal-icon">
             {signUpPrompt === "finish_workout" ? "🏆" : "🔒"}
           </div>
           <h2 style={{
-            fontSize: '20px',
-            fontWeight: 'bold',
+            fontSize: '21px',
+            fontWeight: 800,
+            letterSpacing: '-0.02em',
             marginBottom: '10px',
             color: 'var(--text-primary)'
           }}>
@@ -319,7 +299,7 @@ export default function Home() {
           <p style={{
             fontSize: '14px',
             color: 'var(--text-muted)',
-            lineHeight: '1.5',
+            lineHeight: '1.55',
             marginBottom: '24px'
           }}>
             {message}
@@ -328,17 +308,8 @@ export default function Home() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <button
               onClick={handlePrimary}
-              style={{
-                width: '100%',
-                padding: '12px',
-                borderRadius: '8px',
-                background: 'var(--accent-blue)',
-                color: 'white',
-                fontSize: '15px',
-                fontWeight: 'bold',
-                border: 'none',
-                cursor: 'pointer'
-              }}
+              className="btn btn-primary"
+              style={{ width: '100%', padding: '13px', fontSize: '15px' }}
             >
               {primaryBtnText}
             </button>
@@ -346,17 +317,8 @@ export default function Home() {
             {showDiscard && (
               <button
                 onClick={handleDiscard}
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  borderRadius: '8px',
-                  background: 'transparent',
-                  color: 'var(--text-danger)',
-                  fontSize: '15px',
-                  fontWeight: 'bold',
-                  border: '1px solid var(--border-danger)',
-                  cursor: 'pointer'
-                }}
+                className="btn btn-danger-ghost"
+                style={{ width: '100%', padding: '13px', fontSize: '15px' }}
               >
                 Discard Workout
               </button>
@@ -364,16 +326,14 @@ export default function Home() {
 
             <button
               onClick={handleCancel}
+              className="btn"
               style={{
                 width: '100%',
-                padding: '12px',
-                borderRadius: '8px',
+                padding: '13px',
+                fontSize: '15px',
                 background: 'transparent',
                 color: 'var(--text-secondary)',
-                fontSize: '15px',
-                fontWeight: '500',
-                border: 'none',
-                cursor: 'pointer'
+                fontWeight: 600,
               }}
             >
               {showDiscard ? "Back to Workout" : secondaryBtnText}
@@ -394,9 +354,12 @@ export default function Home() {
         background: "var(--bg-page)",
         color: "var(--text-primary)"
       }}>
-        <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 40, marginBottom: 20 }}>⚡️</div>
-          <div style={{ fontWeight: 600 }}>Loading...</div>
+        <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 20 }}>
+          <div className="loading-mark">RJ</div>
+          <div>
+            <div style={{ fontWeight: 800, fontSize: 17, letterSpacing: "-0.01em" }}>Rep Journal</div>
+            <div className="shimmer-bar" style={{ width: 120, margin: "12px auto 0" }} />
+          </div>
         </div>
       </div>
     );
@@ -443,17 +406,16 @@ export default function Home() {
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg-page)" }}>
       <div
+        className="app-header"
         style={{
-          background: "var(--bg-header)",
-          borderBottom: "1px solid var(--border-default)",
           padding: "calc(16px + env(safe-area-inset-top)) 20px 16px",
-          position: "sticky",
-          top: 0,
-          zIndex: 10,
         }}
       >
         <div className="header-container">
-          <div className="header-title">💪 Rep Journal</div>
+          <div className="header-title">
+            <span className="brand-mark">RJ</span>
+            Rep Journal
+          </div>
           <div className="header-tabs">
             {["templates", "library", "history"].map((t) => (
               <button
@@ -465,17 +427,7 @@ export default function Home() {
                     setTab(t);
                   }
                 }}
-                style={{
-                  padding: "6px 14px",
-                  borderRadius: 8,
-                  border: "none",
-                  background: tab === t ? "var(--bg-tab-active)" : "transparent",
-                  color: tab === t ? "var(--text-secondary)" : "var(--text-muted)",
-                  fontWeight: tab === t ? 600 : 400,
-                  cursor: "pointer",
-                  fontSize: 13,
-                  boxShadow: tab === t ? "var(--shadow-tab)" : "none",
-                }}
+                className={`tab-btn${tab === t ? " active" : ""}`}
               >
                 {t === "templates" 
                   ? `My Templates${isGuest ? " 🔒" : ""}` 
@@ -490,18 +442,7 @@ export default function Home() {
               href="/watch"
               target="_blank"
               title="Open Watch View"
-              style={{
-                fontSize: 18,
-                textDecoration: "none",
-                background: "var(--bg-tab)",
-                width: 36,
-                height: 36,
-                borderRadius: 10,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                border: "1px solid var(--border-default)",
-              }}
+              className="icon-btn"
             >
               ⌚️
             </a>
@@ -523,17 +464,7 @@ export default function Home() {
                   supabase.auth.signOut();
                 }
               }}
-              style={{
-                background: "none",
-                border: "none",
-                fontSize: 18,
-                cursor: "pointer",
-                width: 36,
-                height: 36,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center"
-              }}
+              className="icon-btn"
               title={isGuest ? "Exit Guest Mode" : "Sign Out"}
               aria-label={isGuest ? "Exit Guest Mode" : "Sign Out"}
             >
@@ -553,117 +484,65 @@ export default function Home() {
                 marginBottom: 16,
               }}
             >
-              <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)" }}>My Templates</div>
+              <div>
+                <div className="eyebrow">Your routines</div>
+                <div className="section-title">My Templates</div>
+              </div>
               <div style={{ display: "flex", gap: 8 }}>
                 <button
                   onClick={() => setActiveWorkout({ id: `empty-${Date.now()}`, name: "Empty Workout", exercises: [] })}
-                  style={{ padding: "7px 14px", borderRadius: 9, border: "1px solid var(--border-default)", background: "var(--bg-card)", color: "var(--text-muted)", fontWeight: 600, cursor: "pointer", fontSize: 13 }}
+                  className="btn btn-ghost"
+                  style={{ padding: "8px 14px", fontSize: 13 }}
                 >
                   Start Empty Workout
                 </button>
                 <button
                   onClick={() => setEditing("new")}
-                style={{
-                  padding: "7px 14px",
-                  borderRadius: 9,
-                  border: "none",
-                  background: "var(--accent-blue)",
-                  color: "#fff",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  fontSize: 13,
-                }}
-              >
-                + New
-              </button>
+                  className="btn btn-primary"
+                  style={{ padding: "8px 14px", fontSize: 13 }}
+                >
+                  + New
+                </button>
               </div>
             </div>
             {userTemplates.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "60px 0", color: "var(--text-faint)" }}>
-                <div style={{ fontSize: 36, marginBottom: 8 }}>🏋️</div>
-                <div>No templates yet — create one to get started</div>
+              <div className="card fade-up" style={{ textAlign: "center", padding: "56px 24px", color: "var(--text-faint)" }}>
+                <div className="icon-tile" style={{ margin: "0 auto 16px", width: 64, height: 64, fontSize: 30, borderRadius: 4 }}>🏋️</div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.01em" }}>No templates yet</div>
+                <div style={{ fontSize: 14, color: "var(--text-muted)", marginTop: 6 }}>Create one to get started — or copy a routine from the Library.</div>
               </div>
             ) : (
-              userTemplates.map((t) => (
-                <div
+              userTemplates.map((t, i) => (
+                <TemplateCard
                   key={t.id}
-                  style={{
-                    background: "var(--bg-card)",
-                    border: "1px solid var(--border-default)",
-                    borderRadius: 12,
-                    padding: 16,
-                    marginBottom: 12,
-                  }}
-                >
-                  <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text-secondary)" }}>{t.name}</div>
-                  <div style={{ fontSize: 12, color: "var(--text-faint)", marginTop: 3 }}>
-                    {t.exercises?.length || 0} exercise{(t.exercises?.length !== 1) ? "s" : ""} ·{" "}
-                    {t.exercises?.reduce((a, e) => a + (e.sets?.length || 0), 0) || 0} sets
-                  </div>
-                  <div style={{ marginTop: 6, display: "flex", flexWrap: "wrap", gap: 4 }}>
-                    {t.exercises?.map((e) => (
-                      <span
-                        key={e.id}
-                        style={{
-                          fontSize: 11,
-                          padding: "2px 8px",
-                          background: "var(--bg-tab)",
-                          borderRadius: 99,
-                          color: "var(--text-muted)",
-                        }}
+                  template={t}
+                  index={i}
+                  actions={
+                    <>
+                      <button
+                        onClick={() => setActiveWorkout(t)}
+                        className="btn btn-primary"
+                        style={{ flex: 2, padding: 10, fontSize: 13 }}
                       >
-                        {e.name}
-                      </span>
-                    ))}
-                  </div>
-                  <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-                    <button
-                      onClick={() => setActiveWorkout(t)}
-                      style={{
-                        flex: 2,
-                        padding: 9,
-                        borderRadius: 9,
-                        border: "none",
-                        background: "var(--accent-blue)",
-                        color: "#fff",
-                        fontWeight: 700,
-                        cursor: "pointer",
-                        fontSize: 13,
-                      }}
-                    >
-                      ▶ Start
-                    </button>
-                    <button
-                      onClick={() => setEditing(t)}
-                      style={{
-                        flex: 1,
-                        padding: 9,
-                        borderRadius: 9,
-                        border: "1px solid var(--border-default)",
-                        background: "var(--bg-card)",
-                        color: "var(--text-muted)",
-                        cursor: "pointer",
-                        fontSize: 13,
-                      }}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => deleteTemplate(t.id)}
-                      style={{
-                        padding: "9px 12px",
-                        borderRadius: 9,
-                        border: "1px solid var(--border-danger)",
-                        background: "var(--bg-card)",
-                        color: "var(--text-danger)",
-                        cursor: "pointer",
-                        fontSize: 13,
-                      }}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                </div>
+                        ▶ Start
+                      </button>
+                      <button
+                        onClick={() => setEditing(t)}
+                        className="btn btn-ghost"
+                        style={{ flex: 1, padding: 10, fontSize: 13 }}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => deleteTemplate(t.id)}
+                        className="btn btn-danger-ghost"
+                        style={{ padding: "10px 14px", fontSize: 13 }}
+                      >
+                        ✕
+                      </button>
+                    </>
+                  }
+                />
               ))
             )}
           </>
@@ -678,134 +557,72 @@ export default function Home() {
                 marginBottom: 16,
               }}
             >
-              <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)" }}>
-                Template Library {isAdmin(user) && <span style={{ fontSize: 11, padding: '2px 6px', background: 'var(--accent-blue)', color: 'white', borderRadius: 4, marginLeft: 8, fontWeight: 600 }}>Admin</span>}
+              <div>
+                <div className="eyebrow">Ready-made routines</div>
+                <div className="section-title">
+                  Template Library {isAdmin(user) && <span style={{ fontSize: 11, padding: '3px 8px', background: 'var(--brand-1)', color: 'var(--on-brand)', borderRadius: 4, marginLeft: 8, fontWeight: 700, verticalAlign: 'middle' }}>Admin</span>}
+                </div>
               </div>
               {isAdmin(user) && (
                 <button
                   onClick={() => setEditing({ is_system: true })}
-                  style={{
-                    padding: "7px 14px",
-                    borderRadius: 9,
-                    border: "none",
-                    background: "var(--accent-blue)",
-                    color: "#fff",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    fontSize: 13,
-                  }}
+                  className="btn btn-primary"
+                  style={{ padding: "8px 14px", fontSize: 13 }}
                 >
                   + New System
                 </button>
               )}
             </div>
             {systemTemplates.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "60px 0", color: "var(--text-faint)" }}>
-                <div style={{ fontSize: 36, marginBottom: 8 }}>📚</div>
-                <div>No system templates available</div>
+              <div className="card fade-up" style={{ textAlign: "center", padding: "56px 24px", color: "var(--text-faint)" }}>
+                <div className="icon-tile" style={{ margin: "0 auto 16px", width: 64, height: 64, fontSize: 30, borderRadius: 4 }}>📚</div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.01em" }}>No system templates available</div>
+                <div style={{ fontSize: 14, color: "var(--text-muted)", marginTop: 6 }}>Check back soon — new routines are added regularly.</div>
               </div>
             ) : (
-              systemTemplates.map((t) => (
-                <div
+              systemTemplates.map((t, i) => (
+                <TemplateCard
                   key={t.id}
-                  style={{
-                    background: "var(--bg-card)",
-                    border: "1px solid var(--border-default)",
-                    borderRadius: 12,
-                    padding: 16,
-                    marginBottom: 12,
-                  }}
-                >
-                  <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text-secondary)" }}>{t.name}</div>
-                  <div style={{ fontSize: 12, color: "var(--text-faint)", marginTop: 3 }}>
-                    {t.exercises?.length || 0} exercise{(t.exercises?.length !== 1) ? "s" : ""} ·{" "}
-                    {t.exercises?.reduce((a, e) => a + (e.sets?.length || 0), 0) || 0} sets
-                  </div>
-                  <div style={{ marginTop: 6, display: "flex", flexWrap: "wrap", gap: 4 }}>
-                    {t.exercises?.map((e) => (
-                      <span
-                        key={e.id}
-                        style={{
-                          fontSize: 11,
-                          padding: "2px 8px",
-                          background: "var(--bg-tab)",
-                          borderRadius: 99,
-                          color: "var(--text-muted)",
-                        }}
-                      >
-                        {e.name}
-                      </span>
-                    ))}
-                  </div>
-                  <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-                    <button
-                      onClick={() => setActiveWorkout(t)}
-                      style={{
-                        flex: isAdmin(user) ? 2 : 1,
-                        padding: 9,
-                        borderRadius: 9,
-                        border: "none",
-                        background: "var(--accent-blue)",
-                        color: "#fff",
-                        fontWeight: 700,
-                        cursor: "pointer",
-                        fontSize: 13,
-                      }}
-                    >
-                      ▶ Start
-                    </button>
-                    {isAdmin(user) ? (
-                      <>
-                        <button
-                          onClick={() => setEditing(t)}
-                          style={{
-                            flex: 1,
-                            padding: 9,
-                            borderRadius: 9,
-                            border: "1px solid var(--border-default)",
-                            background: "var(--bg-card)",
-                            color: "var(--text-muted)",
-                            cursor: "pointer",
-                            fontSize: 13,
-                          }}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleAdminDeleteTemplate(t.id)}
-                          style={{
-                            padding: "9px 12px",
-                            borderRadius: 9,
-                            border: "1px solid var(--border-danger)",
-                            background: "var(--bg-card)",
-                            color: "var(--text-danger)",
-                            cursor: "pointer",
-                            fontSize: 13,
-                          }}
-                        >
-                          ✕
-                        </button>
-                      </>
-                    ) : (
+                  template={t}
+                  index={i}
+                  actions={
+                    <>
                       <button
-                        onClick={() => handleCloneTemplate(t)}
-                        style={{
-                          flex: 1,
-                          padding: 9,
-                          borderRadius: 9,
-                          border: "1px solid var(--border-default)",
-                          background: "var(--bg-card)",
-                          color: "var(--text-muted)",
-                          cursor: "pointer",
-                          fontSize: 13,
-                          fontWeight: 600,
-                        }}
+                        onClick={() => setActiveWorkout(t)}
+                        className="btn btn-primary"
+                        style={{ flex: isAdmin(user) ? 2 : 1, padding: 10, fontSize: 13 }}
                       >
-                        📥 Copy to My Templates
+                        ▶ Start
                       </button>
-                    )}
-                  </div>
-                </div>
+                      {isAdmin(user) ? (
+                        <>
+                          <button
+                            onClick={() => setEditing(t)}
+                            className="btn btn-ghost"
+                            style={{ flex: 1, padding: 10, fontSize: 13 }}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleAdminDeleteTemplate(t.id)}
+                            className="btn btn-danger-ghost"
+                            style={{ padding: "10px 14px", fontSize: 13 }}
+                          >
+                            ✕
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          onClick={() => handleCloneTemplate(t)}
+                          className="btn btn-ghost"
+                          style={{ flex: 1, padding: 10, fontSize: 13 }}
+                        >
+                          📥 Copy to My Templates
+                        </button>
+                      )}
+                    </>
+                  }
+                />
               ))
             )}
           </>
@@ -819,6 +636,49 @@ export default function Home() {
         )}
       </div>
       {renderSignUpModal()}
+    </div>
+  );
+}
+
+// Shared template card — no exercise chips: each exercise is its own row
+// (colored dot + name + set count), up to 4 rows, then "+N more".
+function TemplateCard({ template: t, index = 0, actions }) {
+  const accent = accentFor(t.name);
+  const exercises = t.exercises || [];
+  const totalSets = exercises.reduce((a, e) => a + (e.sets?.length || 0), 0);
+  const shown = exercises.slice(0, 4);
+  return (
+    <div
+      className="template-card fade-up"
+      style={{ "--accent": accent.solid, animationDelay: `${Math.min(index, 8) * 60}ms` }}
+    >
+      <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+        <div className="icon-tile">{iconFor(t.name)}</div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 18, fontWeight: 900, letterSpacing: "-0.02em", color: "var(--text-primary)", lineHeight: 1.25 }}>{t.name}</div>
+          <div className="mono" style={{ fontSize: 12, color: "var(--text-faint)", marginTop: 3, fontWeight: 600 }}>
+            {exercises.length} exercise{exercises.length !== 1 ? "s" : ""} ·{" "}
+            {totalSets} sets
+          </div>
+        </div>
+      </div>
+      {exercises.length > 0 && (
+        <div style={{ marginTop: 12 }}>
+          {shown.map((e) => (
+            <div className="ex-row" key={e.id}>
+              <span className="ex-dot" />
+              <span className="ex-row__name">{e.name}</span>
+              <span className="ex-row__sets">{e.sets?.length || 0} {(e.sets?.length || 0) === 1 ? "set" : "sets"}</span>
+            </div>
+          ))}
+          {exercises.length > 4 && (
+            <div className="ex-more">+{exercises.length - 4} more exercises</div>
+          )}
+        </div>
+      )}
+      <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
+        {actions}
+      </div>
     </div>
   );
 }

@@ -22,14 +22,12 @@ export default function RestTimer({ onDone }) {
 
     return (
         <div
+            className="card fade-up"
             style={{
                 display: "flex",
                 alignItems: "center",
                 gap: 12,
-                padding: "8px 12px",
-                background: "var(--bg-done)",
-                border: "1px solid var(--border-success)",
-                borderRadius: 10,
+                padding: "12px 14px",
                 marginBottom: 16,
             }}
         >
@@ -45,15 +43,15 @@ export default function RestTimer({ onDone }) {
                     strokeDasharray={circ}
                     strokeDashoffset={circ * (1 - pct / 100)}
                     strokeLinecap="round"
-                    style={{ transform: "rotate(-90deg)", transformOrigin: "50% 50%" }}
+                    style={{ transform: "rotate(-90deg)", transformOrigin: "50% 50%", transition: "stroke-dashoffset 1s linear" }}
                 />
                 <text x={34} y={39} textAnchor="middle" fontSize={14} fontWeight={700} fill="var(--accent-green-text)">
                     {secs}s
                 </text>
             </svg>
             <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: "var(--accent-green-dark)" }}>Rest Timer</div>
-                <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
+                <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: "-0.01em", color: "var(--accent-green-dark)" }}>Rest Timer</div>
+                <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
                     {[30, 60, 90].map((v) => (
                         <button
                             key={v}
@@ -61,14 +59,11 @@ export default function RestTimer({ onDone }) {
                                 setSecs(v);
                                 setRunning(true);
                             }}
+                            className={`btn${secs === v ? " btn-green" : " btn-ghost"}`}
                             style={{
                                 fontSize: 11,
-                                padding: "2px 8px",
-                                borderRadius: 6,
-                                border: "1px solid var(--border-success-btn)",
-                                background: secs === v ? "var(--accent-green)" : "var(--bg-card)",
-                                color: secs === v ? "#fff" : "var(--accent-green-text)",
-                                cursor: "pointer",
+                                padding: "4px 10px",
+                                borderRadius: 99,
                             }}
                         >
                             {v}s
@@ -76,46 +71,25 @@ export default function RestTimer({ onDone }) {
                     ))}
                 </div>
             </div>
-            <div style={{ display: "flex", gap: 6 }}>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
                 <button
                     onClick={() => setSecs((s) => s + 30)}
-                    style={{
-                        padding: "4px 10px",
-                        borderRadius: 7,
-                        border: "1px solid var(--border-success-btn)",
-                        background: "var(--bg-card)",
-                        fontSize: 12,
-                        cursor: "pointer",
-                        color: "var(--accent-green-text)",
-                    }}
+                    className="btn btn-ghost"
+                    style={{ padding: "6px 10px", fontSize: 12 }}
                 >
                     +30s
                 </button>
                 <button
                     onClick={() => setRunning((r) => !r)}
-                    style={{
-                        padding: "4px 10px",
-                        borderRadius: 7,
-                        border: "1px solid var(--border-success-btn)",
-                        background: "var(--bg-card)",
-                        fontSize: 12,
-                        cursor: "pointer",
-                        color: "var(--accent-green-text)",
-                    }}
+                    className="btn btn-ghost"
+                    style={{ padding: "6px 10px", fontSize: 12 }}
                 >
                     {running ? "Pause" : "Resume"}
                 </button>
                 <button
                     onClick={onDone}
-                    style={{
-                        padding: "4px 10px",
-                        borderRadius: 7,
-                        border: "none",
-                        background: "var(--accent-green)",
-                        color: "#fff",
-                        fontSize: 12,
-                        cursor: "pointer",
-                    }}
+                    className="btn btn-green"
+                    style={{ padding: "6px 12px", fontSize: 12 }}
                 >
                     Skip
                 </button>

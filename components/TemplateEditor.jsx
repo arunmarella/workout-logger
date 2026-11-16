@@ -50,34 +50,22 @@ export default function TemplateEditor({ template, onSave, onCancel }) {
 
     return (
         <div style={{ maxWidth: 600, margin: "0 auto" }}>
-            <div style={{ fontSize: 20, fontWeight: 700, color: "var(--text-primary)", marginBottom: 16 }}>
+            <div className="eyebrow">{template ? "Edit routine" : "New routine"}</div>
+            <div className="section-title" style={{ fontSize: 22, marginBottom: 18 }}>
                 {template ? "Edit Template" : "New Template"}
             </div>
             <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Template name (e.g. Push Day)"
-                style={{
-                    width: "100%",
-                    padding: "10px 12px",
-                    borderRadius: 10,
-                    border: "1px solid var(--border-default)",
-                    fontSize: 15,
-                    marginBottom: 16,
-                    background: "var(--bg-input)",
-                    color: "var(--text-primary)",
-                }}
+                className="input"
+                style={{ marginBottom: 16, padding: "13px 16px", fontSize: 16, fontWeight: 700 }}
             />
-            {exercises.map((ex) => (
+            {exercises.map((ex, i) => (
                 <div
                     key={ex.id}
-                    style={{
-                        background: "var(--bg-card)",
-                        border: "1px solid var(--border-default)",
-                        borderRadius: 12,
-                        padding: 14,
-                        marginBottom: 12,
-                    }}
+                    className="card fade-up"
+                    style={{ padding: 16, marginBottom: 12, animationDelay: `${Math.min(i, 6) * 50}ms` }}
                 >
                     <div style={{ marginBottom: 10 }}>
                         <div style={{ display: "flex", gap: 8, marginBottom: 6 }}>
@@ -88,14 +76,8 @@ export default function TemplateEditor({ template, onSave, onCancel }) {
                             />
                             <button
                                 onClick={() => removeEx(ex.id)}
-                                style={{
-                                    padding: "6px 10px",
-                                    borderRadius: 8,
-                                    border: "1px solid var(--border-danger)",
-                                    background: "var(--bg-card)",
-                                    color: "var(--text-danger)",
-                                    cursor: "pointer",
-                                }}
+                                className="btn btn-danger-ghost"
+                                style={{ padding: "8px 12px", fontSize: 13, flexShrink: 0 }}
                             >
                                 ✕
                             </button>
@@ -105,9 +87,9 @@ export default function TemplateEditor({ template, onSave, onCancel }) {
                                 style={{ 
                                     fontSize: 12, 
                                     color: "var(--text-faint)", 
-                                    padding: "4px 8px",
+                                    padding: "8px 10px",
                                     background: "var(--bg-tab)",
-                                    borderRadius: 6,
+                                    borderRadius: 4,
                                     maxHeight: 60,
                                     overflow: "hidden",
                                     textOverflow: "ellipsis",
@@ -131,9 +113,9 @@ export default function TemplateEditor({ template, onSave, onCancel }) {
                             marginBottom: 6,
                         }}
                     >
-                        <div style={{ fontSize: 11, color: "var(--text-faint)" }}>Reps</div>
-                        <div style={{ fontSize: 11, color: "var(--text-faint)" }}>Weight</div>
-                        <div style={{ fontSize: 11, color: "var(--text-faint)" }}>Notes</div>
+                        <div className="mono" style={{ fontSize: 11, color: "var(--text-faint)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>Reps</div>
+                        <div className="mono" style={{ fontSize: 11, color: "var(--text-faint)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>Weight</div>
+                        <div className="mono" style={{ fontSize: 11, color: "var(--text-faint)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>Notes</div>
                         <div />
                         {ex.sets.map((s, si) => (
                             <ExerciseSetRow
@@ -149,14 +131,11 @@ export default function TemplateEditor({ template, onSave, onCancel }) {
                     </div>
                     <button
                         onClick={() => addSet(ex.id)}
+                        className="btn btn-ghost"
                         style={{
                             fontSize: 12,
-                            padding: "4px 10px",
-                            borderRadius: 7,
-                            border: "1px dashed var(--border-subtle)",
-                            background: "var(--bg-card)",
-                            color: "var(--text-muted)",
-                            cursor: "pointer",
+                            padding: "6px 12px",
+                            borderStyle: "dashed",
                         }}
                     >
                         + Add Set
@@ -165,15 +144,12 @@ export default function TemplateEditor({ template, onSave, onCancel }) {
             ))}
             <button
                 onClick={addEx}
+                className="btn btn-ghost"
                 style={{
                     width: "100%",
-                    padding: 10,
-                    borderRadius: 10,
-                    border: "1px dashed var(--border-subtle)",
-                    background: "var(--bg-add-btn)",
-                    color: "var(--text-muted)",
+                    padding: 12,
                     fontSize: 14,
-                    cursor: "pointer",
+                    borderStyle: "dashed",
                     marginBottom: 16,
                 }}
             >
@@ -182,16 +158,8 @@ export default function TemplateEditor({ template, onSave, onCancel }) {
             <div style={{ display: "flex", gap: 10, paddingBottom: 32 }}>
                 <button
                     onClick={onCancel}
-                    style={{
-                        flex: 1,
-                        padding: 11,
-                        borderRadius: 10,
-                        border: "1px solid var(--border-default)",
-                        background: "var(--bg-card)",
-                        color: "var(--text-muted)",
-                        fontWeight: 600,
-                        cursor: "pointer",
-                    }}
+                    className="btn btn-ghost"
+                    style={{ flex: 1, padding: 13 }}
                 >
                     Cancel
                 </button>
@@ -206,16 +174,8 @@ export default function TemplateEditor({ template, onSave, onCancel }) {
                         })
                     }
                     disabled={!valid}
-                    style={{
-                        flex: 2,
-                        padding: 11,
-                        borderRadius: 10,
-                        border: "none",
-                        background: valid ? "var(--accent-blue)" : "var(--accent-disabled)",
-                        color: "#fff",
-                        fontWeight: 700,
-                        cursor: valid ? "pointer" : "default",
-                    }}
+                    className="btn btn-primary"
+                    style={{ flex: 2, padding: 13 }}
                 >
                     Save Template
                 </button>
@@ -231,52 +191,29 @@ function ExerciseSetRow({ s, si, exId, setsLength, updSet, remSet }) {
                 type="number"
                 value={s.reps}
                 onChange={(e) => updSet(exId, si, "reps", +e.target.value)}
-                style={{
-                    padding: "5px 8px",
-                    borderRadius: 7,
-                    border: "1px solid var(--border-default)",
-                    fontSize: 13,
-                    background: "var(--bg-input)",
-                    color: "var(--text-primary)",
-                }}
+                className="set-input"
             />
             <input
                 type="number"
                 value={s.weight}
                 onChange={(e) => updSet(exId, si, "weight", +e.target.value)}
-                style={{
-                    padding: "5px 8px",
-                    borderRadius: 7,
-                    border: "1px solid var(--border-default)",
-                    fontSize: 13,
-                    background: "var(--bg-input)",
-                    color: "var(--text-primary)",
-                }}
+                className="set-input"
             />
             <input
                 type="text"
                 value={s.notes}
                 placeholder="—"
                 onChange={(e) => updSet(exId, si, "notes", e.target.value)}
-                style={{
-                    padding: "5px 8px",
-                    borderRadius: 7,
-                    border: "1px solid var(--border-default)",
-                    fontSize: 13,
-                    background: "var(--bg-input)",
-                    color: "var(--text-primary)",
-                }}
+                className="set-input"
             />
             <button
                 onClick={() => remSet(exId, si)}
                 disabled={setsLength === 1}
+                className="btn btn-ghost"
                 style={{
-                    padding: "4px 8px",
-                    borderRadius: 7,
-                    border: "1px solid var(--border-default)",
-                    background: "var(--bg-card)",
+                    padding: "6px 10px",
+                    fontSize: 12,
                     color: setsLength === 1 ? "var(--accent-disabled)" : "var(--text-faint)",
-                    cursor: setsLength === 1 ? "default" : "pointer",
                 }}
             >
                 ✕

@@ -109,19 +109,40 @@ export default function ActiveWorkout({ template, onFinish, onCancel, previousMa
     if (showSummary) {
         return (
             <div style={{ maxWidth: 600, margin: "0 auto" }}>
-                <div style={{ fontSize: 22, fontWeight: 700, color: "var(--text-primary)", marginBottom: 4 }}>Workout Summary</div>
-                <div style={{ fontSize: 14, color: "var(--text-muted)", marginBottom: 16 }}>{template.name} · {elapsed} · {done}/{total} sets{volume > 0 ? ` · ${volume.toLocaleString()} lb volume` : ""}{prCount > 0 ? ` · 🏆 ${prCount} PR${prCount > 1 ? "s" : ""}` : ""}</div>
-                {logs.map((ex) => (
-                    <div key={ex.id} style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: 12, padding: 14, marginBottom: 10 }}>
-                        <div style={{ fontWeight: 700, fontSize: 14, color: "var(--text-secondary)" }}>{ex.name}</div>
-                        <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>
+                <div className="fade-up">
+                    <div className="eyebrow">Nice work</div>
+                    <div style={{ fontSize: 28, fontWeight: 900, letterSpacing: "-0.03em", lineHeight: 1.05, color: "var(--text-primary)", marginBottom: 4 }}>Workout Summary</div>
+                    <div style={{ fontSize: 14, color: "var(--text-muted)", marginBottom: 16, fontWeight: 600 }}>{template.name}</div>
+                    <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
+                        <div className="stat-card">
+                            <div className="stat-card__value">{elapsed}</div>
+                            <div className="stat-card__label">Duration</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="stat-card__value">{volume > 0 ? volume.toLocaleString() : "—"}</div>
+                            <div className="stat-card__label">Volume (lb)</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="stat-card__value">{done}/{total}</div>
+                            <div className="stat-card__label">Sets</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="stat-card__value">{prCount > 0 ? `🏆 ${prCount}` : "0"}</div>
+                            <div className="stat-card__label">PRs</div>
+                        </div>
+                    </div>
+                </div>
+                {logs.map((ex, i) => (
+                    <div key={ex.id} className="card fade-up" style={{ padding: 16, marginBottom: 10, animationDelay: `${Math.min(i, 8) * 60}ms` }}>
+                        <div style={{ fontWeight: 800, fontSize: 14, letterSpacing: "-0.01em", color: "var(--text-secondary)" }}>{ex.name}</div>
+                        <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4, fontWeight: 600 }}>
                             {ex.sets.filter((s) => s.done).map((s) => `${s.actualWeight > 0 ? `${s.actualWeight} lb × ` : ""}${s.actualReps}`).join(", ") || "No sets completed"}
                         </div>
                     </div>
                 ))}
                 <div style={{ display: "flex", gap: 10, marginTop: 8, paddingBottom: 32 }}>
-                    <button onClick={() => setShowSummary(false)} style={{ flex: 1, padding: 12, borderRadius: 10, border: "1px solid var(--border-default)", background: "var(--bg-card)", color: "var(--text-muted)", fontWeight: 600, cursor: "pointer", fontSize: 14 }}>Back</button>
-                    <button onClick={handleFinish} style={{ flex: 2, padding: 12, borderRadius: 10, border: "none", background: "var(--accent-blue)", color: "#fff", fontWeight: 700, cursor: "pointer", fontSize: 14 }}>Save Workout</button>
+                    <button onClick={() => setShowSummary(false)} className="btn btn-ghost" style={{ flex: 1, padding: 13, fontSize: 14 }}>Back</button>
+                    <button onClick={handleFinish} className="btn btn-primary" style={{ flex: 2, padding: 13, fontSize: 14 }}>Save Workout</button>
                 </div>
             </div>
         );
@@ -133,77 +154,58 @@ export default function ActiveWorkout({ template, onFinish, onCancel, previousMa
                 style={{
                     display: "flex",
                     justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: 12,
+                    alignItems: "flex-start",
+                    gap: 12,
+                    marginBottom: 14,
                 }}
             >
-                <div>
-                    <div
-                        style={{
-                            fontSize: 11,
-                            color: "var(--text-faint)",
-                            textTransform: "uppercase",
-                            letterSpacing: 1,
-                        }}
-                    >
-                        Active Workout
+                <div style={{ minWidth: 0 }}>
+                    <div className="eyebrow">Active Workout</div>
+                    <div style={{ fontSize: 26, fontWeight: 900, letterSpacing: "-0.03em", color: "var(--text-primary)", lineHeight: 1.1 }}>{template.name}</div>
+                    <div style={{ fontSize: 13, color: "var(--text-muted)", fontWeight: 600, marginTop: 4 }}>
+                        {done}/{total} sets{volume > 0 ? ` · ${volume.toLocaleString()} lb` : ""} · {pct}% complete
                     </div>
-                    <div style={{ fontSize: 22, fontWeight: 700, color: "var(--text-primary)" }}>{template.name}</div>
                 </div>
-                <div style={{ textAlign: "right" }}>
-                    <div style={{ fontSize: 16, color: "var(--text-primary)", fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>
-                        ⏱ {elapsed}
-                    </div>
-                    <div style={{ fontSize: 13, color: "var(--text-muted)" }}>
-                        {done}/{total} sets{volume > 0 ? ` · ${volume.toLocaleString()} lb` : ""}
-                    </div>
-                    <div style={{ fontSize: 11, color: "var(--text-faint)" }}>{pct}% complete</div>
+                <div className="timer-pill" style={{ flexShrink: 0 }}>
+                    ⏱ {elapsed}
                 </div>
             </div>
             {sessionId && (
                 <div style={{ 
                     background: "var(--bg-tab)", 
-                    padding: "8px 12px", 
-                    borderRadius: 10, 
+                    padding: "9px 14px", 
+                    borderRadius: 4, 
                     marginBottom: 16, 
                     fontSize: 12, 
+                    fontWeight: 600,
                     color: "var(--text-muted)",
                     display: "flex",
                     justifyContent: "space-between",
-                    alignItems: "center"
+                    alignItems: "center",
+                    border: "1.5px solid var(--border-default)"
                 }}>
-                    <span>Syncing with Watch...</span>
+                    <span>⌚ Syncing with Watch...</span>
                     <span style={{ fontFamily: "monospace", opacity: 0.7 }}>ID: {sessionId.slice(0, 8)}</span>
                 </div>
             )}
-            <div style={{ background: "var(--border-default)", borderRadius: 99, height: 6, marginBottom: 16 }}>
+            <div className="progress-track" style={{ marginBottom: 18 }}>
                 <div
-                    style={{
-                        background: "var(--accent-blue)",
-                        height: 6,
-                        borderRadius: 99,
-                        width: `${pct}%`,
-                        transition: "width 0.3s",
-                    }}
+                    className="progress-fill"
+                    style={{ width: `${pct}%` }}
                 />
             </div>
             {restingSet && <RestTimer onDone={() => setRestingSet(null)} />}
             {logs.map((ex, ei) => (
                 <div
                     key={ex.id}
-                    style={{
-                        background: "var(--bg-card)",
-                        border: "1px solid var(--border-default)",
-                        borderRadius: 12,
-                        padding: 16,
-                        marginBottom: 14,
-                    }}
+                    className="card fade-up"
+                    style={{ padding: 16, marginBottom: 14, animationDelay: `${Math.min(ei, 6) * 50}ms` }}
                 >
-                    <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-secondary)", marginBottom: 4 }}>
+                    <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: "-0.01em", color: "var(--text-primary)", marginBottom: 4 }}>
                         {ex.name}
                     </div>
                     {previousMap[ex.name] && (
-                        <div style={{ fontSize: 11, color: "var(--text-faint)", marginBottom: 10 }}>
+                        <div className="mono" style={{ fontSize: 11, color: "var(--text-faint)", fontWeight: 600, marginBottom: 10 }}>
                             Last: {previousMap[ex.name].sets.map((s) => `${s.weight > 0 ? `${s.weight} lb × ` : ""}${s.reps}`).join(", ")}
                         </div>
                     )}
@@ -215,11 +217,11 @@ export default function ActiveWorkout({ template, onFinish, onCancel, previousMa
                             alignItems: "center",
                         }}
                     >
-                        <div style={{ fontSize: 11, color: "var(--text-faint)" }}>#</div>
-                        <div style={{ fontSize: 11, color: "var(--text-faint)" }}>Reps</div>
-                        <div style={{ fontSize: 11, color: "var(--text-faint)" }}>Wt (lbs)</div>
-                        <div style={{ fontSize: 11, color: "var(--text-faint)" }}>Notes</div>
-                        <div style={{ fontSize: 11, color: "var(--text-faint)" }}>Previous</div>
+                        <div className="mono" style={{ fontSize: 11, color: "var(--text-faint)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>#</div>
+                        <div className="mono" style={{ fontSize: 11, color: "var(--text-faint)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>Reps</div>
+                        <div className="mono" style={{ fontSize: 11, color: "var(--text-faint)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>Wt (lbs)</div>
+                        <div className="mono" style={{ fontSize: 11, color: "var(--text-faint)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>Notes</div>
+                        <div className="mono" style={{ fontSize: 11, color: "var(--text-faint)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>Previous</div>
                         <div />
                         {ex.sets.map((s, si) => (
                             <SetRow key={si} s={s} si={si} ei={ei} update={update} toggleDone={toggleDone} prev={previousMap[ex.name]?.sets[si]} prevMax={previousMap[ex.name]?.maxWeight || 0} />
@@ -227,9 +229,10 @@ export default function ActiveWorkout({ template, onFinish, onCancel, previousMa
                     </div>
                     <button
                         onClick={() => addSet(ei)}
+                        className="btn btn-ghost"
                         style={{
-                            fontSize: 12, padding: "4px 10px", borderRadius: 7, border: "1px dashed var(--border-subtle)",
-                            background: "var(--bg-card)", color: "var(--text-muted)", cursor: "pointer", marginTop: 10,
+                            fontSize: 12, padding: "6px 12px", marginTop: 12,
+                            borderStyle: "dashed",
                         }}
                     >
                         + Add Set
@@ -244,41 +247,24 @@ export default function ActiveWorkout({ template, onFinish, onCancel, previousMa
                 />
             </div>
             {logs.length === 0 && (
-                <div style={{ textAlign: "center", padding: "40px 0", color: "var(--text-faint)" }}>
-                    <div style={{ fontSize: 32, marginBottom: 8 }}>🏋️</div>
-                    <div>Empty workout — add your first exercise above</div>
+                <div className="card" style={{ textAlign: "center", padding: "40px 24px", color: "var(--text-faint)" }}>
+                    <div className="icon-tile" style={{ margin: "0 auto 14px", width: 60, height: 60, fontSize: 28, borderRadius: 4 }}>🏋️</div>
+                    <div style={{ fontSize: 15, fontWeight: 800, color: "var(--text-primary)" }}>Empty workout</div>
+                    <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 4 }}>Add your first exercise above</div>
                 </div>
             )}
             <div style={{ display: "flex", gap: 10, marginTop: 8, paddingBottom: 32 }}>
                 <button
                     onClick={onCancel}
-                    style={{
-                        flex: 1,
-                        padding: 12,
-                        borderRadius: 10,
-                        border: "1px solid var(--border-default)",
-                        background: "var(--bg-card)",
-                        color: "var(--text-muted)",
-                        fontWeight: 600,
-                        cursor: "pointer",
-                        fontSize: 14,
-                    }}
+                    className="btn btn-ghost"
+                    style={{ flex: 1, padding: 13, fontSize: 14 }}
                 >
                     Cancel
                 </button>
                 <button
                     onClick={handleFinish}
-                    style={{
-                        flex: 2,
-                        padding: 12,
-                        borderRadius: 10,
-                        border: "none",
-                        background: "var(--accent-blue)",
-                        color: "#fff",
-                        fontWeight: 700,
-                        cursor: "pointer",
-                        fontSize: 14,
-                    }}
+                    className="btn btn-primary"
+                    style={{ flex: 2, padding: 13, fontSize: 14 }}
                 >
                     Finish Workout
                 </button>
@@ -291,69 +277,37 @@ function SetRow({ s, si, ei, update, toggleDone, prev, prevMax }) {
     const isPR = s.done && (s.actualWeight ?? s.weight) > 0 && (s.actualWeight ?? s.weight) > prevMax;
     return (
         <>
-            <div style={{ fontSize: 13, color: "var(--text-muted)", fontWeight: 600 }}>{si + 1}</div>
+            <div style={{ fontSize: 13, color: "var(--text-muted)", fontWeight: 700 }}>{si + 1}</div>
             <input
                 type="number"
                 value={s.actualReps}
                 onChange={(e) => update(ei, si, "actualReps", +e.target.value)}
-                style={{
-                    width: "100%",
-                    padding: "5px 6px",
-                    border: "1px solid var(--border-default)",
-                    borderRadius: 7,
-                    fontSize: 13,
-                    background: s.done ? "var(--bg-done)" : "var(--bg-input)",
-                    color: "var(--text-primary)",
-                }}
+                className="set-input"
+                style={{ background: s.done ? "var(--bg-done)" : "var(--bg-input)" }}
             />
             <input
                 type="number"
                 value={s.actualWeight}
                 onChange={(e) => update(ei, si, "actualWeight", +e.target.value)}
-                style={{
-                    width: "100%",
-                    padding: "5px 6px",
-                    border: "1px solid var(--border-default)",
-                    borderRadius: 7,
-                    fontSize: 13,
-                    background: s.done ? "var(--bg-done)" : "var(--bg-input)",
-                    color: "var(--text-primary)",
-                }}
+                className="set-input"
+                style={{ background: s.done ? "var(--bg-done)" : "var(--bg-input)" }}
             />
             <input
                 type="text"
                 value={s.notes}
                 placeholder="—"
                 onChange={(e) => update(ei, si, "notes", e.target.value)}
-                style={{
-                    width: "100%",
-                    padding: "5px 6px",
-                    border: "1px solid var(--border-default)",
-                    borderRadius: 7,
-                    fontSize: 13,
-                    background: s.done ? "var(--bg-done)" : "var(--bg-input)",
-                    color: "var(--text-primary)",
-                }}
+                className="set-input"
+                style={{ background: s.done ? "var(--bg-done)" : "var(--bg-input)" }}
             />
-            <div style={{ fontSize: 11, color: "var(--text-faint)" }}>
+            <div style={{ fontSize: 11, color: "var(--text-faint)", fontWeight: 600 }}>
                 {prev ? `${prev.weight > 0 ? `${prev.weight} × ` : ""}${prev.reps}` : "—"}
                 {isPR ? " 🏆" : ""}
             </div>
             <button
                 onClick={() => toggleDone(ei, si)}
-                style={{
-                    width: 30,
-                    height: 30,
-                    borderRadius: 8,
-                    border: s.done ? "none" : "2px solid var(--border-checkbox)",
-                    background: s.done ? "var(--accent-green)" : "var(--bg-input)",
-                    cursor: "pointer",
-                    fontSize: 14,
-                    color: "#fff",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                }}
+                className={`check-btn${s.done ? " done" : ""}`}
+                aria-label={s.done ? `Mark set ${si + 1} incomplete` : `Mark set ${si + 1} complete`}
             >
                 {s.done ? "✓" : ""}
             </button>

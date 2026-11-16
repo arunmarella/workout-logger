@@ -4,116 +4,528 @@
   padding: 0;
 }
 
+/* ─── TypeSafe-inspired design language ───────────────────────────────
+   Light base: near-white page, near-black text, flat solid color blocks.
+   Sharp corners (0–4px), thin solid borders, NO soft shadows, NO glass.
+   Accent is MONO — pure black & white, no color at all. --brand-1 is the
+   accent (black in light, white in dark); --on-brand is the text color
+   that sits on brand-1 backgrounds. Mono type (ui-monospace) for
+   eyebrows, labels and stat labels. */
+
 /* ─── Light Theme (default) ─── */
 :root {
-  --bg-page: #f8fafc;
+  --bg-page: #fefefe;
   --bg-card: #ffffff;
-  --bg-header: #ffffff;
-  --bg-tab: #f1f5f9;
+  --bg-header: #fefefe;
+  --bg-tab: #f0f0f0;
   --bg-tab-active: #ffffff;
   --bg-input: #ffffff;
-  --bg-done: #f0fdf4;
-  --bg-add-btn: #f8fafc;
+  --bg-done: #ecfdf5;
+  --bg-add-btn: #ffffff;
 
-  --border-default: #e2e8f0;
-  --border-subtle: #cbd5e1;
+  --border-strong: #161616;
+  --border-default: #161616;
+  --border-subtle: #d9d9d9;
   --border-danger: #fecaca;
-  --border-success: #bbf7d0;
-  --border-success-btn: #86efac;
-  --border-checkbox: #cbd5e1;
+  --border-success: #a7f3d0;
+  --border-success-btn: #6ee7b7;
+  --border-checkbox: #161616;
 
-  --text-primary: #0f172a;
-  --text-secondary: #1e293b;
-  --text-muted: #64748b;
-  --text-faint: #94a3b8;
-  --text-danger: #ef4444;
+  --text-primary: #161616;
+  --text-secondary: #1e1e1e;
+  --text-muted: #525252;
+  --text-faint: #8a8a8a;
+  --text-danger: #dc2626;
 
-  --accent-blue: #3b82f6;
-  --accent-green: #22c55e;
-  --accent-green-text: #16a34a;
-  --accent-green-dark: #15803d;
+  --accent-blue: #2563eb;
+  --accent-green: #10b981;
+  --accent-green-text: #047857;
+  --accent-green-dark: #065f46;
   --accent-disabled: #cbd5e1;
 
-  --shadow-tab: 0 1px 3px rgba(0, 0, 0, 0.08);
-  --shadow-toggle: 0 2px 8px rgba(0, 0, 0, 0.12);
+  /* Brand — mono: pure black & white, flat solids only (no gradients).
+     --on-brand is the text color used on brand-1 backgrounds. */
+  --brand-1: #161616;
+  --brand-2: #161616;
+  --on-brand: #ffffff;
+
+  /* Hard offset shadows — the only shadow language in the system */
+  --shadow-hard: 3px 3px 0 var(--brand-1);
+  --shadow-hard-dark: 3px 3px 0 #161616;
+  --shadow-card-hard: 4px 4px 0 rgba(22, 22, 22, 0.12);
 
   color-scheme: light;
 }
 
-/* ─── Dark Theme ─── */
+/* ─── Dark Theme — near-black, modelled on TypeSafe's footer/FAQ ─── */
 [data-theme="dark"] {
-  --bg-page: #0f172a;
-  --bg-card: #1e293b;
-  --bg-header: #1e293b;
-  --bg-tab: #334155;
-  --bg-tab-active: #475569;
-  --bg-input: #334155;
-  --bg-done: #14532d;
-  --bg-add-btn: #1e293b;
+  --bg-page: #161616;
+  --bg-card: #1e1e1e;
+  --bg-header: #161616;
+  --bg-tab: #232323;
+  --bg-tab-active: #2e2e2e;
+  --bg-input: #232323;
+  --bg-done: #062e22;
+  --bg-add-btn: #1e1e1e;
 
-  --border-default: #334155;
-  --border-subtle: #475569;
+  --border-strong: #3d3d3d;
+  --border-default: #3d3d3d;
+  --border-subtle: #2a2a2a;
   --border-danger: #7f1d1d;
-  --border-success: #166534;
-  --border-success-btn: #166534;
-  --border-checkbox: #475569;
+  --border-success: #065f46;
+  --border-success-btn: #059669;
+  --border-checkbox: #6b6b6b;
 
-  --text-primary: #f1f5f9;
-  --text-secondary: #e2e8f0;
-  --text-muted: #94a3b8;
-  --text-faint: #64748b;
+  --text-primary: #fefefe;
+  --text-secondary: #e8e8e8;
+  --text-muted: #a3a3a3;
+  --text-faint: #737373;
   --text-danger: #f87171;
 
   --accent-blue: #60a5fa;
-  --accent-green: #4ade80;
-  --accent-green-text: #4ade80;
-  --accent-green-dark: #86efac;
-  --accent-disabled: #475569;
+  --accent-green: #34d399;
+  --accent-green-text: #6ee7b7;
+  --accent-green-dark: #a7f3d0;
+  --accent-disabled: #525252;
 
-  --shadow-tab: 0 1px 3px rgba(0, 0, 0, 0.3);
-  --shadow-toggle: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --brand-1: #fefefe;
+  --brand-2: #fefefe;
+  --on-brand: #161616;
+
+  --shadow-hard: 3px 3px 0 var(--brand-1);
+  --shadow-hard-dark: 3px 3px 0 #fefefe;
+  --shadow-card-hard: 4px 4px 0 rgba(0, 0, 0, 0.45);
 
   color-scheme: dark;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   background: var(--bg-page);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transition: background 0.3s ease, color 0.3s ease;
+  transition: background 0.2s ease, color 0.2s ease;
   /* Safe area padding for mobile devices */
   padding-bottom: env(safe-area-inset-bottom);
 }
 
-/* Smooth theme transitions for cards and inputs */
+/* Mono type — eyebrows, labels, stat labels, nav */
+.mono {
+  font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+/* Fast, restrained theme transitions */
 input, button, div {
-  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+button {
+  font-family: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--brand-1);
+  outline-offset: 2px;
+}
+
+/* ─── Motion — quick (150–250ms), no bounce, no parallax ─── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.fade-up {
+  animation: fadeUp 0.2s ease-out both;
+}
+
+/* Flat loading bar — no shimmer */
+.shimmer-bar {
+  height: 8px;
+  border-radius: 2px;
+  background: var(--border-subtle);
+}
+
+.loading-mark {
+  width: 72px;
+  height: 72px;
+  border-radius: 4px;
+  background: var(--brand-1);
+  color: var(--on-brand);
+  font-weight: 900;
+  font-size: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ─── Buttons ───
+   Filled CTAs are pills with a hard offset shadow that flips color on
+   hover (TypeSafe's Contact Us chip). Outline buttons are sharp squares
+   that invert on hover. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-weight: 700;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.btn:active {
+  transform: translate(2px, 2px);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Primary pill CTA: near-black, flips to brand violet on hover */
+.btn-primary {
+  background: var(--text-primary);
+  color: var(--bg-page);
+  border-radius: 999px;
+  border-color: var(--text-primary);
+  box-shadow: var(--shadow-hard);
+}
+
+.btn-primary:hover {
+  background: var(--brand-1);
+  border-color: var(--brand-1);
+  color: var(--on-brand);
+  box-shadow: var(--shadow-hard-dark);
+}
+
+.btn-primary:active {
+  box-shadow: 1px 1px 0 var(--text-primary);
+}
+
+/* Green pill — rest timer actions */
+.btn-green {
+  background: var(--accent-green);
+  color: #fff;
+  border-radius: 999px;
+  border-color: var(--accent-green);
+  box-shadow: 3px 3px 0 var(--text-primary);
+}
+
+.btn-green:hover {
+  box-shadow: 3px 3px 0 var(--accent-green);
+}
+
+.btn-green:active {
+  box-shadow: 1px 1px 0 var(--text-primary);
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: var(--border-default);
+  color: var(--text-primary);
+}
+
+.btn-ghost:hover {
+  background: var(--text-primary);
+  color: var(--bg-page);
+  border-color: var(--text-primary);
+}
+
+.btn-danger-ghost {
+  background: transparent;
+  border-color: var(--border-danger);
+  color: var(--text-danger);
+}
+
+.btn-danger-ghost:hover {
+  background: var(--text-danger);
+  border-color: var(--text-danger);
+  color: #fff;
+}
+
+/* Small square icon button (watch, theme, sign-out) */
+.icon-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 4px;
+  border: 1.5px solid var(--border-default);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  text-decoration: none;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease,
+    background 0.15s ease;
+}
+
+.icon-btn:hover {
+  border-color: var(--brand-1);
+  color: var(--brand-1);
+}
+
+.icon-btn:active {
+  transform: translate(1px, 1px);
+}
+
+/* ─── Inputs ─── */
+.input {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 4px;
+  border: 1.5px solid var(--border-default);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-size: 15px;
+  font-family: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--brand-1);
+  box-shadow: 2px 2px 0 var(--brand-1);
+}
+
+.set-input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1.5px solid var(--border-default);
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: inherit;
+  background: var(--bg-input);
+  color: var(--text-primary);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.set-input:focus {
+  outline: none;
+  border-color: var(--brand-1);
+  box-shadow: 2px 2px 0 var(--brand-1);
+}
+
+/* ─── Cards — flat, sharp, thin solid border, no soft shadow ─── */
+.card {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-default);
+  border-radius: 4px;
+}
+
+.eyebrow {
+  font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--brand-1);
+}
+
+.section-title {
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  color: var(--text-primary);
+}
+
+/* ─── Template cards ─── */
+.template-card {
+  position: relative;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-default);
+  border-radius: 4px;
+  padding: 18px 18px 16px 24px;
+  margin-bottom: 14px;
+  overflow: hidden;
+  transition: border-color 0.15s ease;
+}
+
+.template-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  background: var(--accent, var(--brand-1));
+}
+
+.template-card:hover {
+  border-color: var(--accent, var(--brand-1));
+}
+
+.icon-tile {
+  width: 46px;
+  height: 46px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 21px;
+  flex-shrink: 0;
+  background: color-mix(in srgb, var(--accent, var(--brand-1)) 14%, transparent);
+  color: var(--accent, var(--brand-1));
+  border: 1.5px solid color-mix(in srgb, var(--accent, var(--brand-1)) 40%, transparent);
+}
+
+.ex-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 13px;
+}
+
+.ex-row:last-child {
+  border-bottom: none;
+}
+
+.ex-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--accent, var(--brand-1));
+  flex-shrink: 0;
+}
+
+.ex-row__name {
+  flex: 1;
+  min-width: 0;
+  color: var(--text-secondary);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ex-row__sets {
+  color: var(--text-faint);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+.ex-more {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent, var(--brand-1));
+  padding-top: 7px;
+}
+
+/* ─── Header — flat solid bar, thin bottom border, no glass ─── */
+.app-header {
+  background: var(--bg-header);
+  border-bottom: 2px solid var(--border-strong);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.brand-mark {
+  width: 38px;
+  height: 38px;
+  border-radius: 4px;
+  background: var(--brand-1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--on-brand);
+  font-weight: 900;
+  font-size: 15px;
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
+}
+
+/* Segmented nav — bordered box, mono labels, active is a solid block */
+.header-tabs {
+  display: flex;
+  gap: 3px;
+  background: transparent;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 3px;
+}
+
+.tab-btn {
+  padding: 7px 14px;
+  border-radius: 2px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 11px;
+  font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.tab-btn:hover {
+  color: var(--text-primary);
+}
+
+.tab-btn.active {
+  background: var(--text-primary);
+  color: var(--bg-page);
 }
 
 /* Theme toggle button */
 .theme-toggle {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  border: 1px solid var(--border-default);
-  background: var(--bg-tab);
+  width: 38px;
+  height: 38px;
+  border-radius: 4px;
+  border: 1.5px solid var(--border-default);
+  background: var(--bg-card);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 18px;
-  box-shadow: var(--shadow-toggle);
-  transition: transform 0.2s ease, background 0.3s ease;
+  transition: border-color 0.15s ease, color 0.15s ease;
 }
 
 .theme-toggle:hover {
-  transform: scale(1.1);
+  border-color: var(--brand-1);
+  color: var(--brand-1);
 }
 
 .theme-toggle:active {
-  transform: scale(0.95);
+  transform: translate(1px, 1px);
 }
 
 /* Responsive Header Styles */
@@ -127,24 +539,20 @@ input, button, div {
 }
 
 .header-title {
-  font-size: 20px;
-  font-weight: 800;
+  font-size: 19px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
   color: var(--text-primary);
   white-space: nowrap;
-}
-
-.header-tabs {
   display: flex;
-  gap: 4px;
-  background: var(--bg-tab);
-  border-radius: 10px;
-  padding: 3px;
+  align-items: center;
+  gap: 10px;
 }
 
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 @media (max-width: 550px) {
@@ -176,6 +584,182 @@ input, button, div {
     flex: 1;
     text-align: center;
   }
+}
+
+/* ─── Modal ─── */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(22, 22, 22, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.15s ease both;
+}
+
+.modal-card {
+  max-width: 400px;
+  width: 100%;
+  background: var(--bg-card);
+  border-radius: 4px;
+  padding: 28px 24px;
+  border: 2px solid var(--border-strong);
+  box-shadow: var(--shadow-card-hard);
+  text-align: center;
+  animation: popIn 0.2s ease-out both;
+}
+
+.modal-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 4px;
+  background: var(--brand-1);
+  color: var(--on-brand);
+  font-size: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+/* ─── History ─── */
+.history-card {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-default);
+  border-radius: 4px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  position: relative;
+  transition: border-color 0.15s ease;
+}
+
+.history-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  background: var(--accent, var(--brand-1));
+}
+
+.history-card:hover {
+  border-color: var(--accent, var(--brand-1));
+}
+
+/* ─── Workout screen ─── */
+.progress-track {
+  background: var(--bg-tab);
+  border-radius: 2px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  background: var(--brand-1);
+  height: 8px;
+  border-radius: 2px;
+  transition: width 0.2s ease;
+}
+
+/* Solid near-black pill, mono numerals */
+.timer-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--text-primary);
+  color: var(--bg-page);
+  font-weight: 700;
+  font-size: 16px;
+  font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Giant stat numbers, small mono labels — the TypeSafe device */
+.stat-card {
+  flex: 1;
+  min-width: 0;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-default);
+  border-radius: 4px;
+  padding: 16px 10px 14px;
+  text-align: center;
+}
+
+.stat-card__value {
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--brand-1);
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-card__label {
+  font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-top: 6px;
+}
+
+.check-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  border: 2px solid var(--border-checkbox);
+  background: var(--bg-input);
+  cursor: pointer;
+  font-size: 15px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.check-btn:hover {
+  border-color: var(--accent-green);
+}
+
+.check-btn.done {
+  border-color: var(--accent-green);
+  background: var(--accent-green);
+}
+
+.check-btn:active {
+  transform: scale(0.94);
+}
+
+/* ─── Auth hero — flat solid color block, huge heavy headline ─── */
+.auth-hero {
+  background: var(--brand-1);
+  border-bottom: 4px solid var(--border-strong);
+  position: relative;
+}
+
+.auth-card {
+  background: var(--bg-card);
+  border: 2px solid var(--border-strong);
+  border-radius: 4px;
+  box-shadow: var(--shadow-card-hard);
+}
+
+.link-gradient {
+  color: var(--brand-1);
+  font-weight: 800;
 }
 
 /* ─── Apple Watch Specific Styles ─── */
