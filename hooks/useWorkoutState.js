@@ -122,8 +122,11 @@ export function useWorkoutState({ sessionId: initialSessionId = null, initialTem
     const { data: sessionData } = await supabase.auth.getSession();
     const user = sessionData?.session?.user;
 
+    // Guests / offline: work locally, no watch sync, no error.
+    // The hook's initialTemplate effect already set the local workout.
     if (!user) {
-      setError("Must be logged in to start a workout");
+      setWorkout(initialWorkoutState);
+      setSessionId(null);
       return;
     }
 

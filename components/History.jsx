@@ -18,6 +18,26 @@ const hapticNotification = async (type = NotificationType.Success) => {
 export default function History({ history, onClear, onDelete }) {
     const [expanded, setExpanded] = useState(null);
 
+    const exportCsv = () => {
+        const rows = [["Date", "Workout Name", "Exercise Name", "Set Order", "Weight", "Weight Unit", "Reps", "Notes", "Workout Duration"]];
+        for (const w of history) {
+            for (const ex of w.exercises || []) {
+                ex.sets.forEach((s, i) => rows.push([
+                    new Date(w.date).toISOString(), w.template_name || w.templateName || "",
+                    ex.name, i + 1, s.actualWeight ?? s.weight ?? "", "lbs",
+                    s.actualReps ?? s.reps ?? "", s.notes || "", w.duration || "",
+                ]));
+            }
+        }
+        const csv = rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+        const blob = new Blob([csv], { type: "text/csv" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "workout-history.csv";
+        a.click();
+        URL.revokeObjectURL(a.href);
+    };
+
     if (!history.length) {
         return (
             <div style={{ textAlign: "center", padding: "60px 0", color: "var(--text-faint)" }}>
@@ -38,6 +58,13 @@ export default function History({ history, onClear, onDelete }) {
                 }}
             >
                 <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)" }}>Workout History</div>
+                <div style={{ display: "flex", gap: 8 }}>
+                <button
+                    onClick={exportCsv}
+                    style={{ fontSize: 12, padding: "4px 10px", borderRadius: 7, border: "1px solid var(--border-default)", background: "var(--bg-card)", color: "var(--text-muted)", cursor: "pointer" }}
+                >
+                    Export CSV
+                </button>
                 <button
                     onClick={() => {
                         hapticImpact(ImpactStyle.Heavy);
@@ -55,12 +82,16 @@ export default function History({ history, onClear, onDelete }) {
                 >
                     Clear All
                 </button>
+                </div>
             </div>
-            {[...history].reverse().map((w) => {
+            {/* history is already newest-first from Supabase (date desc);
+                don't reverse it — that was showing oldest first. */}
+            {[...history].sort((a, b) => new Date(b.date) - new Date(a.date)).map((w) => {
                 const d = new Date(w.date);
                 const isOpen = expanded === w.id;
                 const total = w.exercises.reduce((a, e) => a + e.sets.length, 0);
                 const done = w.exercises.reduce((a, e) => a + e.sets.filter((s) => s.done).length, 0);
+                const volume = w.exercises.reduce((a, e) => a + e.sets.reduce((x, s) => x + ((s.actualReps ?? s.reps) || 0) * ((s.actualWeight ?? s.weight) || 0), 0), 0);
                 return (
                     <div
                         key={w.id}
@@ -105,7 +136,7 @@ export default function History({ history, onClear, onDelete }) {
                                             month: "short",
                                             day: "numeric",
                                         })}{" "}
-                                        · {w.duration}min · {done}/{total} sets
+                                        · {w.duration}min · {done}/{total} sets{volume > 0 ? ` · ${volume.toLocaleString()} lb` : ""}
                                     </div>
                                 </div>
                                 <span style={{ color: "var(--text-faint)", fontSize: 12 }}>{isOpen ? "▲" : "▼"}</span>

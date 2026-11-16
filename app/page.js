@@ -9,7 +9,8 @@ import {
   deleteHistoryItem,
   clearAllHistory,
   loadLocalData,
-  clearLocalData
+  clearLocalData,
+  buildPreviousMap
 } from "@/lib/data";
 import { useTheme } from "@/components/ThemeProvider";
 import ActiveWorkout from "@/components/ActiveWorkout";
@@ -419,6 +420,7 @@ export default function Home() {
       <div style={{ minHeight: "100vh", background: "var(--bg-page)", padding: "20px 16px" }}>
         <ActiveWorkout
           template={activeWorkout}
+          previousMap={buildPreviousMap(data.history)}
           onFinish={finishWorkout}
           onCancel={() => setActiveWorkout(null)}
         />
@@ -552,8 +554,15 @@ export default function Home() {
               }}
             >
               <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)" }}>My Templates</div>
-              <button
-                onClick={() => setEditing("new")}
+              <div style={{ display: "flex", gap: 8 }}>
+                <button
+                  onClick={() => setActiveWorkout({ id: `empty-${Date.now()}`, name: "Empty Workout", exercises: [] })}
+                  style={{ padding: "7px 14px", borderRadius: 9, border: "1px solid var(--border-default)", background: "var(--bg-card)", color: "var(--text-muted)", fontWeight: 600, cursor: "pointer", fontSize: 13 }}
+                >
+                  Start Empty Workout
+                </button>
+                <button
+                  onClick={() => setEditing("new")}
                 style={{
                   padding: "7px 14px",
                   borderRadius: 9,
@@ -567,6 +576,7 @@ export default function Home() {
               >
                 + New
               </button>
+              </div>
             </div>
             {userTemplates.length === 0 ? (
               <div style={{ textAlign: "center", padding: "60px 0", color: "var(--text-faint)" }}>

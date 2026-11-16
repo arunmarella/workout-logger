@@ -78,6 +78,20 @@ export default function RestTimer({ onDone }) {
             </div>
             <div style={{ display: "flex", gap: 6 }}>
                 <button
+                    onClick={() => setSecs((s) => s + 30)}
+                    style={{
+                        padding: "4px 10px",
+                        borderRadius: 7,
+                        border: "1px solid var(--border-success-btn)",
+                        background: "var(--bg-card)",
+                        fontSize: 12,
+                        cursor: "pointer",
+                        color: "var(--accent-green-text)",
+                    }}
+                >
+                    +30s
+                </button>
+                <button
                     onClick={() => setRunning((r) => !r)}
                     style={{
                         padding: "4px 10px",
