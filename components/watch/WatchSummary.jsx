@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { Trophy } from "lucide-react";
 
 export default function WatchSummary({ workout, onDone }) {
   if (!workout) return null;
@@ -10,7 +11,7 @@ export default function WatchSummary({ workout, onDone }) {
 
   return (
     <div style={{ padding: "20px 10px", textAlign: "center" }}>
-      <div style={{ fontSize: 40, marginBottom: 10 }}>🏆</div>
+      <div style={{ marginBottom: 10, color: "var(--watch-accent)", display: "flex", justifyContent: "center" }}><Trophy size={40} /></div>
       <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>Workout Complete!</div>
       <div style={{ fontSize: 14, color: "var(--watch-text-secondary)", marginBottom: 24 }}>
         You crushed {completedSets} / {totalSets} sets.

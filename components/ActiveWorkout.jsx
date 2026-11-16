@@ -6,6 +6,7 @@ import RestTimer from "./RestTimer";
 import ExerciseAutocomplete from "./ExerciseAutocomplete";
 import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
 import { useWorkoutState } from "@/hooks/useWorkoutState";
+import { Check, Dumbbell, Timer, Trophy, Watch } from "lucide-react";
 
 const hapticImpact = async (style = ImpactStyle.Light) => {
     try {
@@ -127,7 +128,7 @@ export default function ActiveWorkout({ template, onFinish, onCancel, previousMa
                             <div className="stat-card__label">Sets</div>
                         </div>
                         <div className="stat-card">
-                            <div className="stat-card__value">{prCount > 0 ? `🏆 ${prCount}` : "0"}</div>
+                            <div className="stat-card__value">{prCount > 0 ? (<span style={{ display: "inline-flex", alignItems: "center", gap: 6, justifyContent: "center" }}><Trophy size={24} />{prCount}</span>) : "0"}</div>
                             <div className="stat-card__label">PRs</div>
                         </div>
                     </div>
@@ -167,7 +168,7 @@ export default function ActiveWorkout({ template, onFinish, onCancel, previousMa
                     </div>
                 </div>
                 <div className="timer-pill" style={{ flexShrink: 0 }}>
-                    ⏱ {elapsed}
+                    <Timer size={15} /> {elapsed}
                 </div>
             </div>
             {sessionId && (
@@ -184,7 +185,7 @@ export default function ActiveWorkout({ template, onFinish, onCancel, previousMa
                     alignItems: "center",
                     border: "1.5px solid var(--border-default)"
                 }}>
-                    <span>⌚ Syncing with Watch...</span>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Watch size={14} /> Syncing with Watch...</span>
                     <span style={{ fontFamily: "monospace", opacity: 0.7 }}>ID: {sessionId.slice(0, 8)}</span>
                 </div>
             )}
@@ -248,7 +249,7 @@ export default function ActiveWorkout({ template, onFinish, onCancel, previousMa
             </div>
             {logs.length === 0 && (
                 <div className="card" style={{ textAlign: "center", padding: "40px 24px", color: "var(--text-faint)" }}>
-                    <div className="icon-tile" style={{ margin: "0 auto 14px", width: 60, height: 60, fontSize: 28, borderRadius: 4 }}>🏋️</div>
+                    <div className="icon-tile" style={{ margin: "0 auto 14px", width: 60, height: 60, fontSize: 28, borderRadius: 4 }}><Dumbbell size={28} /></div>
                     <div style={{ fontSize: 15, fontWeight: 800, color: "var(--text-primary)" }}>Empty workout</div>
                     <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 4 }}>Add your first exercise above</div>
                 </div>
@@ -302,14 +303,14 @@ function SetRow({ s, si, ei, update, toggleDone, prev, prevMax }) {
             />
             <div style={{ fontSize: 11, color: "var(--text-faint)", fontWeight: 600 }}>
                 {prev ? `${prev.weight > 0 ? `${prev.weight} × ` : ""}${prev.reps}` : "—"}
-                {isPR ? " 🏆" : ""}
+                {isPR && <Trophy size={12} style={{ verticalAlign: "-1px", marginLeft: 4 }} />}
             </div>
             <button
                 onClick={() => toggleDone(ei, si)}
                 className={`check-btn${s.done ? " done" : ""}`}
                 aria-label={s.done ? `Mark set ${si + 1} incomplete` : `Mark set ${si + 1} complete`}
             >
-                {s.done ? "✓" : ""}
+                {s.done ? <Check size={16} /> : ""}
             </button>
         </>
     );

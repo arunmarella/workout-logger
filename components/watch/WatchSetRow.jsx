@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
+import { Check } from "lucide-react";
 
 export default function WatchSetRow({ set, index, onToggle, onUpdate }) {
   const haptic = async () => {
@@ -47,7 +48,7 @@ export default function WatchSetRow({ set, index, onToggle, onUpdate }) {
           cursor: "pointer",
         }}
       >
-        {set.done ? "✓" : ""}
+        {set.done ? <Check size={18} /> : ""}
       </button>
     </div>
   );

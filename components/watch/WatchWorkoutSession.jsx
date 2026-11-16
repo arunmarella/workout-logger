@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import WatchExerciseSlide from "./WatchExerciseSlide";
 import WatchSummary from "./WatchSummary";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
 export default function WatchWorkoutSession({ workout, onUpdate, onFinish, onCancel }) {
   const [exerciseIndex, setExerciseIndex] = useState(0);
@@ -65,17 +66,17 @@ export default function WatchWorkoutSession({ workout, onUpdate, onFinish, onCan
           onClick={prevExercise}
           disabled={exerciseIndex === 0}
           className="watch-btn-secondary"
-          style={{ flex: 1, opacity: exerciseIndex === 0 ? 0.3 : 1 }}
+          style={{ flex: 1, opacity: exerciseIndex === 0 ? 0.3 : 1, display: "flex", alignItems: "center", justifyContent: "center" }}
         >
-          ←
+          <ArrowLeft size={18} />
         </button>
         <button
           onClick={nextExercise}
           disabled={exerciseIndex === totalExercises - 1}
           className="watch-btn-secondary"
-          style={{ flex: 1, opacity: exerciseIndex === totalExercises - 1 ? 0.3 : 1 }}
+          style={{ flex: 1, opacity: exerciseIndex === totalExercises - 1 ? 0.3 : 1, display: "flex", alignItems: "center", justifyContent: "center" }}
         >
-          →
+          <ArrowRight size={18} />
         </button>
       </div>
 

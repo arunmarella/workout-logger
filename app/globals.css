@@ -399,6 +399,13 @@ button {
   border: 1.5px solid color-mix(in srgb, var(--accent, var(--brand-1)) 40%, transparent);
 }
 
+/* Pastel tile wash — light wash background with a black icon in both themes */
+.icon-tile[data-wash] {
+  background: var(--wash);
+  color: #161616;
+  border-color: rgba(22, 22, 22, 0.14);
+}
+
 .ex-row {
   display: flex;
   align-items: center;

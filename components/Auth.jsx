@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import { KeyRound } from "lucide-react";
 
 export default function Auth({ onGuestAccess, initialSignUp = false }) {
   const [loading, setLoading] = useState(false);
@@ -171,7 +172,7 @@ export default function Auth({ onGuestAccess, initialSignUp = false }) {
                 className="btn btn-ghost"
                 style={{ width: '100%', padding: '13px', fontSize: '15px', marginTop: '4px' }}
               >
-                🔑 Continue as Guest
+                <KeyRound size={15} /> Continue as Guest
               </button>
             )}
           </form>

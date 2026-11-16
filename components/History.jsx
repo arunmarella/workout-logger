@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
 import { accentFor } from "@/lib/accent";
+import { Check, ChevronDown, ChevronUp, ClipboardList, X } from "lucide-react";
 
 const hapticImpact = async (style = ImpactStyle.Light) => {
     try {
@@ -42,7 +43,7 @@ export default function History({ history, onClear, onDelete }) {
     if (!history.length) {
         return (
             <div className="card fade-up" style={{ textAlign: "center", padding: "56px 24px", color: "var(--text-faint)" }}>
-                <div className="icon-tile" style={{ margin: "0 auto 16px", width: 64, height: 64, fontSize: 30, borderRadius: 4 }}>📋</div>
+                <div className="icon-tile" style={{ margin: "0 auto 16px", width: 64, height: 64, fontSize: 30, borderRadius: 4 }}><ClipboardList size={30} /></div>
                 <div style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.01em" }}>No workouts logged yet</div>
                 <div style={{ fontSize: 14, color: "var(--text-muted)", marginTop: 6 }}>Finish your first workout and it will show up here.</div>
             </div>
@@ -136,7 +137,7 @@ export default function History({ history, onClear, onDelete }) {
                                         · {w.duration}min · {done}/{total} sets{volume > 0 ? ` · ${volume.toLocaleString()} lb` : ""}
                                     </div>
                                 </div>
-                                <span style={{ color: "var(--text-faint)", fontSize: 12, flexShrink: 0 }}>{isOpen ? "▲" : "▼"}</span>
+                                <span style={{ color: "var(--text-faint)", flexShrink: 0, display: "inline-flex" }}>{isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}</span>
                             </button>
                             <button
                                 onClick={(e) => {
@@ -152,10 +153,12 @@ export default function History({ history, onClear, onDelete }) {
                                     cursor: "pointer",
                                     fontSize: 14,
                                     flexShrink: 0,
+                                    display: "flex",
+                                    alignItems: "center",
                                 }}
                                 title="Delete workout"
                             >
-                                ✕
+                                <X size={15} />
                             </button>
                         </div>
                         {isOpen && (
@@ -179,7 +182,7 @@ export default function History({ history, onClear, onDelete }) {
                                                     marginBottom: 4,
                                                 }}
                                             >
-                                                <span style={{ width: 16 }}>{s.done ? "✓" : "–"}</span>
+                                                <span style={{ width: 16, display: "inline-flex", alignItems: "center" }}>{s.done ? <Check size={13} /> : "–"}</span>
                                                 <span>Set {si + 1}</span>
                                                 <span>{s.actualReps ?? s.reps} reps</span>
                                                 {(s.actualWeight ?? s.weight) > 0 && (

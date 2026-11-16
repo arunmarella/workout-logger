@@ -12,7 +12,8 @@ import {
   clearLocalData,
   buildPreviousMap
 } from "@/lib/data";
-import { accentFor, iconFor } from "@/lib/accent";
+import { accentFor, iconFor, washFor } from "@/lib/accent";
+import { BookOpen, Copy, Dumbbell, KeyRound, Lock, LogOut, Moon, Play, Sun, Trophy, Watch, X } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
 import ActiveWorkout from "@/components/ActiveWorkout";
 import TemplateEditor from "@/components/TemplateEditor";
@@ -285,7 +286,7 @@ export default function Home() {
       <div className="modal-overlay">
         <div className="modal-card">
           <div className="modal-icon">
-            {signUpPrompt === "finish_workout" ? "🏆" : "🔒"}
+            {signUpPrompt === "finish_workout" ? <Trophy size={28} /> : <Lock size={28} />}
           </div>
           <h2 style={{
             fontSize: '21px',
@@ -429,11 +430,11 @@ export default function Home() {
                 }}
                 className={`tab-btn${tab === t ? " active" : ""}`}
               >
-                {t === "templates" 
-                  ? `My Templates${isGuest ? " 🔒" : ""}` 
-                  : t === "library" 
-                    ? "Library" 
-                    : `History${isGuest ? " 🔒" : ""}`}
+                {t === "templates"
+                  ? <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>My Templates{isGuest && <Lock size={11} />}</span>
+                  : t === "library"
+                    ? "Library"
+                    : <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>History{isGuest && <Lock size={11} />}</span>}
               </button>
             ))}
           </div>
@@ -444,7 +445,7 @@ export default function Home() {
               title="Open Watch View"
               className="icon-btn"
             >
-              ⌚️
+              <Watch size={18} />
             </a>
             <button
               onClick={toggleTheme}
@@ -452,7 +453,7 @@ export default function Home() {
               aria-label="Toggle theme"
               title={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
             >
-              {theme === "light" ? "🌙" : "☀️"}
+              {theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
             </button>
             <button
               onClick={() => {
@@ -468,7 +469,7 @@ export default function Home() {
               title={isGuest ? "Exit Guest Mode" : "Sign Out"}
               aria-label={isGuest ? "Exit Guest Mode" : "Sign Out"}
             >
-              🚪
+              <LogOut size={18} />
             </button>
           </div>
         </div>
@@ -507,7 +508,7 @@ export default function Home() {
             </div>
             {userTemplates.length === 0 ? (
               <div className="card fade-up" style={{ textAlign: "center", padding: "56px 24px", color: "var(--text-faint)" }}>
-                <div className="icon-tile" style={{ margin: "0 auto 16px", width: 64, height: 64, fontSize: 30, borderRadius: 4 }}>🏋️</div>
+                <div className="icon-tile" style={{ margin: "0 auto 16px", width: 64, height: 64, fontSize: 30, borderRadius: 4 }}><Dumbbell size={30} /></div>
                 <div style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.01em" }}>No templates yet</div>
                 <div style={{ fontSize: 14, color: "var(--text-muted)", marginTop: 6 }}>Create one to get started — or copy a routine from the Library.</div>
               </div>
@@ -524,7 +525,7 @@ export default function Home() {
                         className="btn btn-primary"
                         style={{ flex: 2, padding: 10, fontSize: 13 }}
                       >
-                        ▶ Start
+                        <Play size={14} /> Start
                       </button>
                       <button
                         onClick={() => setEditing(t)}
@@ -538,7 +539,7 @@ export default function Home() {
                         className="btn btn-danger-ghost"
                         style={{ padding: "10px 14px", fontSize: 13 }}
                       >
-                        ✕
+                        <X size={14} />
                       </button>
                     </>
                   }
@@ -575,7 +576,7 @@ export default function Home() {
             </div>
             {systemTemplates.length === 0 ? (
               <div className="card fade-up" style={{ textAlign: "center", padding: "56px 24px", color: "var(--text-faint)" }}>
-                <div className="icon-tile" style={{ margin: "0 auto 16px", width: 64, height: 64, fontSize: 30, borderRadius: 4 }}>📚</div>
+                <div className="icon-tile" style={{ margin: "0 auto 16px", width: 64, height: 64, fontSize: 30, borderRadius: 4 }}><BookOpen size={30} /></div>
                 <div style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.01em" }}>No system templates available</div>
                 <div style={{ fontSize: 14, color: "var(--text-muted)", marginTop: 6 }}>Check back soon — new routines are added regularly.</div>
               </div>
@@ -592,7 +593,7 @@ export default function Home() {
                         className="btn btn-primary"
                         style={{ flex: isAdmin(user) ? 2 : 1, padding: 10, fontSize: 13 }}
                       >
-                        ▶ Start
+                        <Play size={14} /> Start
                       </button>
                       {isAdmin(user) ? (
                         <>
@@ -608,7 +609,7 @@ export default function Home() {
                             className="btn btn-danger-ghost"
                             style={{ padding: "10px 14px", fontSize: 13 }}
                           >
-                            ✕
+                            <X size={14} />
                           </button>
                         </>
                       ) : (
@@ -617,7 +618,7 @@ export default function Home() {
                           className="btn btn-ghost"
                           style={{ flex: 1, padding: 10, fontSize: 13 }}
                         >
-                          📥 Copy to My Templates
+                          <Copy size={14} /> Copy to My Templates
                         </button>
                       )}
                     </>
@@ -653,7 +654,7 @@ function TemplateCard({ template: t, index = 0, actions }) {
       style={{ "--accent": accent.solid, animationDelay: `${Math.min(index, 8) * 60}ms` }}
     >
       <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-        <div className="icon-tile">{iconFor(t.name)}</div>
+        <div className="icon-tile" data-wash style={{ "--wash": washFor(t.name) }}>{iconFor(t.name)}</div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 18, fontWeight: 900, letterSpacing: "-0.02em", color: "var(--text-primary)", lineHeight: 1.25 }}>{t.name}</div>
           <div className="mono" style={{ fontSize: 12, color: "var(--text-faint)", marginTop: 3, fontWeight: 600 }}>

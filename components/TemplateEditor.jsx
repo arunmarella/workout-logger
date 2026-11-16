@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { genId } from "@/lib/data";
 import ExerciseAutocomplete from "./ExerciseAutocomplete";
+import { X } from "lucide-react";
 
 export default function TemplateEditor({ template, onSave, onCancel }) {
     const [name, setName] = useState(template?.name || "");
@@ -79,7 +80,7 @@ export default function TemplateEditor({ template, onSave, onCancel }) {
                                 className="btn btn-danger-ghost"
                                 style={{ padding: "8px 12px", fontSize: 13, flexShrink: 0 }}
                             >
-                                ✕
+                                <X size={14} />
                             </button>
                         </div>
                         {ex.description && (
@@ -216,7 +217,7 @@ function ExerciseSetRow({ s, si, exId, setsLength, updSet, remSet }) {
                     color: setsLength === 1 ? "var(--accent-disabled)" : "var(--text-faint)",
                 }}
             >
-                ✕
+                <X size={13} />
             </button>
         </>
     );
