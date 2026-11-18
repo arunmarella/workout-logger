@@ -5,9 +5,16 @@ import { supabase } from "@/lib/supabase";
 import { genId } from "@/lib/data";
 
 /**
- * useWorkoutState
- * Manages the lifecycle and real-time synchronization of a workout.
+ * stableStringify — JSON with object keys sorted recursively, so two
+ * objects with the same content compare equal even if Postgres jsonb
+ * reordered their keys on the round-trip (it does).
  */
+function stableStringify(value) {
+  if (value === null || typeof value !== "object") return JSON.stringify(value);
+  if (Array.isArray(value)) return `[${value.map(stableStringify).join(",")}]`;
+  const keys = Object.keys(value).sort();
+  return `{${keys.map((k) => `${JSON.stringify(k)}:${stableStringify(value[k])}`).join(",")}}`;
+}
 
 // localStorage key for the in-progress workout draft. Guests have no
 // Supabase session, so without this a reload — or iOS reclaiming the
@@ -49,6 +56,20 @@ export function useWorkoutState({ sessionId: initialSessionId = null, initialTem
   // to avoid infinite loops when updating the server.
   const remoteUpdateRef = useRef(false);
 
+  // Echo suppression for our own sync writes. Supabase Realtime fires an
+  // UPDATE event for our own writes too, and the echoed state is the
+  // snapshot from when the write was issued — if the user typed another
+  // keystroke after that snapshot but before the echo arrived, applying
+  // the echo silently wipes the newer edit ("the value doesn't stick").
+  // lastSyncedRef holds the canonical form of the last state we wrote;
+  // lastLocalEditRef holds the time of the last local edit, so a stale
+  // echo can be recognised even when its content differs.
+  const lastSyncedRef = useRef(null);
+  const lastLocalEditRef = useRef(0);
+  // True once the user has edited the workout locally. The initial fetch
+  // below must not clobber those edits if it resolves late.
+  const dirtyRef = useRef(false);
+
   // Initialize workout: a resumed in-progress workout wins over the
   // template, so a reload mid-workout restores the sets already done.
   useEffect(() => {
@@ -89,6 +110,12 @@ export function useWorkoutState({ sessionId: initialSessionId = null, initialTem
         (payload) => {
           console.log("Remote update received:", payload);
           if (payload.new && payload.new.state) {
+            // Our own sync write echoed back: same content, ignore it.
+            if (stableStringify(payload.new.state) === lastSyncedRef.current) return;
+            // A stale echo: the row snapshot predates a local edit made
+            // after the write was issued. Applying it would drop that edit.
+            const remoteAt = payload.new.updated_at ? new Date(payload.new.updated_at).getTime() : 0;
+            if (remoteAt && remoteAt <= lastLocalEditRef.current) return;
             remoteUpdateRef.current = true;
             setWorkout(payload.new.state);
           }
@@ -107,6 +134,11 @@ export function useWorkoutState({ sessionId: initialSessionId = null, initialTem
         .single();
       
       if (data && data.state) {
+        // The fetch can resolve after the user has already typed: the
+        // server row is the pre-edit snapshot, so applying it would wipe
+        // those edits. Local edits win; server state only applies while
+        // the workout is still untouched.
+        if (dirtyRef.current) return;
         remoteUpdateRef.current = true;
         setWorkout(data.state);
       }
@@ -140,6 +172,7 @@ export function useWorkoutState({ sessionId: initialSessionId = null, initialTem
     }
 
     const syncToRemote = async () => {
+      lastSyncedRef.current = stableStringify(workout);
       const { error } = await supabase
         .from('active_workouts')
         .update({ state: workout, updated_at: new Date().toISOString() })
@@ -200,6 +233,8 @@ export function useWorkoutState({ sessionId: initialSessionId = null, initialTem
   }, []);
 
   const updateWorkout = useCallback((newWorkout) => {
+    dirtyRef.current = true;
+    lastLocalEditRef.current = Date.now();
     setWorkout(newWorkout);
   }, []);
 

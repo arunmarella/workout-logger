@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { genId } from "@/lib/data";
 import ExerciseAutocomplete from "./ExerciseAutocomplete";
+import NumberField from "./NumberField";
 import { X } from "lucide-react";
 
 export default function TemplateEditor({ template, onSave, onCancel }) {
@@ -188,17 +189,17 @@ export default function TemplateEditor({ template, onSave, onCancel }) {
 function ExerciseSetRow({ s, si, exId, setsLength, updSet, remSet }) {
     return (
         <>
-            <input
-                type="number"
+            <NumberField
                 value={s.reps}
-                onChange={(e) => updSet(exId, si, "reps", +e.target.value)}
+                onCommit={(v) => updSet(exId, si, "reps", v)}
                 className="set-input"
+                ariaLabel={`Reps for set ${si + 1}`}
             />
-            <input
-                type="number"
+            <NumberField
                 value={s.weight}
-                onChange={(e) => updSet(exId, si, "weight", +e.target.value)}
+                onCommit={(v) => updSet(exId, si, "weight", v)}
                 className="set-input"
+                ariaLabel={`Weight for set ${si + 1}`}
             />
             <input
                 type="text"

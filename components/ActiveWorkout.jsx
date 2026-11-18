@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { genId } from "@/lib/data";
 import RestTimer from "./RestTimer";
+import NumberField from "./NumberField";
 import ExerciseAutocomplete from "./ExerciseAutocomplete";
 import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
 import { useWorkoutState } from "@/hooks/useWorkoutState";
@@ -299,19 +300,19 @@ function SetRow({ s, si, ei, update, toggleDone, prev, prevMax }) {
     return (
         <>
             <div style={{ fontSize: 13, color: "var(--text-muted)", fontWeight: 700 }}>{si + 1}</div>
-            <input
-                type="number"
+            <NumberField
                 value={s.actualReps}
-                onChange={(e) => update(ei, si, "actualReps", +e.target.value)}
+                onCommit={(v) => update(ei, si, "actualReps", v)}
                 className="set-input"
                 style={{ background: s.done ? "var(--bg-done)" : "var(--bg-input)" }}
+                ariaLabel={`Reps for set ${si + 1}`}
             />
-            <input
-                type="number"
+            <NumberField
                 value={s.actualWeight}
-                onChange={(e) => update(ei, si, "actualWeight", +e.target.value)}
+                onCommit={(v) => update(ei, si, "actualWeight", v)}
                 className="set-input"
                 style={{ background: s.done ? "var(--bg-done)" : "var(--bg-input)" }}
+                ariaLabel={`Weight for set ${si + 1}`}
             />
             <input
                 type="text"
